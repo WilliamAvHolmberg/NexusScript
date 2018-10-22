@@ -27,7 +27,7 @@ public class Withdraw extends Node {
 
 		if(bankAmount < amountRequired) {
 			amountRequiredFromGE = amountRequired - bankAmount;
-			GrandExchangeHandler.addItem(new GEItem(item.getItemID(), amountRequiredFromGE));
+			GrandExchangeHandler.addItem(new GEItem(item.getItemID(), amountRequiredFromGE, item.getItemName()));
 			methodProvider.log("Bank does not contain the required amount of our item. Buy:" + amountRequiredFromGE);
 		}else {
 			methodProvider.bank.withdraw(item.getItemID(), amountRequired);

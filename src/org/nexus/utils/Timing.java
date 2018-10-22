@@ -13,6 +13,7 @@ import org.osbot.rs07.utility.ConditionalSleep;
  */
 public class Timing
 {
+	
 	/**
 	 * Calculates the time, in ms, from a specific mark
 	 * 

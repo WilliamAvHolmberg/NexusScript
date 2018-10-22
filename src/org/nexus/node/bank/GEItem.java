@@ -1,28 +1,27 @@
 package org.nexus.node.bank;
 
-public class GEItem {
+import org.nexus.NexusScript;
+import org.nexus.utils.Exchange;
+import org.nexus.utils.ExchangeItem;
+
+public class GEItem extends RequiredItem {
+
+	private int itemPrice;
+	private ExchangeItem exchangeItem;
 	
-	private int itemID;
-	private int itemAmount;
-	
-	public GEItem(int itemID, int itemAmount) {
-		this.itemID = itemID;
-		this.itemAmount = itemAmount;
-	}
-	
-	public int getItemID() {
-		return itemID;
-	}
-	
-	public int getAmount() {
-		return itemAmount;
-	}
-	
-	public String toString() {
-		return "Amount:" + itemAmount + "...ID:" + itemID;
+	public GEItem(int itemID, int itemAmount, String itemName) {
+		setItemID(itemID);
+		setAmount(itemAmount);
+		setItemName(itemName);
+		setItemPrice(Exchange.getPrice(itemID));
 	}
 
-	public void setAmount(int newAmount) {
-		this.itemAmount = newAmount;
+	private void setItemPrice(int price) {
+		this.itemPrice = price;
 	}
+	
+	public int getItemPrice() {
+		return itemPrice;
+	}
+
 }

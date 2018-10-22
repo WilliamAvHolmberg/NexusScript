@@ -15,6 +15,7 @@ import org.nexus.node.bank.Withdraw;
 import org.nexus.node.bank.WithdrawItem;
 import org.nexus.node.ge.BuyItem;
 import org.nexus.node.ge.DepositAllButCoins;
+import org.nexus.utils.RSExchange;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
@@ -26,6 +27,7 @@ public class NexusScript extends Script {
 	Thread nexHelperThread;
 	List<Node> bankNodes;
 	List<Node> geNodes;
+	List<Node> nodes;
 	private Node currentNode;
 
 	@Override
@@ -42,7 +44,7 @@ public class NexusScript extends Script {
 		geNodes.add(new DepositAllButCoins().init(this));
 		geNodes.add(new BuyItem().init(this));
 
-		BankHandler.addItem(new WithdrawItem(385, 55));
+		BankHandler.addItem(new WithdrawItem(385, 68, "Shark"));
 		// fill NodeHandler with nodes
 		// NodeHandler.add(new Node().init(this));
 	}
@@ -55,36 +57,14 @@ public class NexusScript extends Script {
 		if (!SHOULD_RUN) {
 			stop();
 		}
-		GEItem geItem = GrandExchangeHandler.getItem();
-		WithdrawItem bankItem = BankHandler.getItem();
-		if (geItem != null) {
-			if (bank.isOpen()) {
-				log("bank is open");
-				//if amount(bank) >= bankitem.getAmount, remove self
-				
-				geItem.setAmount((int) (bankItem.getAmount() - bank.getAmount(geItem.getItemID())));
-			}
-			if (inventory.getAmount(bankItem.getItemID()) == bankItem.getAmount()) {
-				GrandExchangeHandler.removeItem(geItem);
-			} else {
 
-				for (Node node : geNodes) {
-					if (node.shallExecute()) {
-						currentNode = node;
-						node.execute();
-						break;
-					}
-				}
-			}
-		} else if (bankItem != null) {
-			if (inventory.getAmount(bankItem.getItemID()) == bankItem.getAmount()) {
-				BankHandler.removeItem(bankItem);
-			} else {
-				for (Node node : bankNodes) {
-					if (node.shallExecute()) {
-						currentNode = node;
-						node.execute();
-					}
+		nodes = getNodes();
+		if (nodes != null) {
+			for (Node node : nodes) {
+				if (node.shallExecute()) {
+					currentNode = node;
+					node.execute();
+					break;
 				}
 			}
 		}
@@ -99,13 +79,37 @@ public class NexusScript extends Script {
 
 		// loop through each node
 		// break loop if we executed since we want to restart the loop.
-		for (Node node : NodeHandler.nodes) {
-			if (node.shallExecute()) {
-				node.execute();
-				break;
+
+		return 600; // amount of milliseconds to wait before each loop. Set to 600
+	}
+
+	private List<Node> getNodes() {
+		GEItem geItem = GrandExchangeHandler.getItem();
+		WithdrawItem bankItem = BankHandler.getItem();
+		if (geItem != null) {
+			if (purchaseIsCompleted(geItem, bankItem)) {
+				GrandExchangeHandler.removeItem(geItem);
+			} else if (purchaseAmountIsWrong(geItem, bankItem)) {
+				geItem.setAmount((int) (bankItem.getAmount() - bank.getAmount(geItem.getItemID())));
+			} else {
+				return geNodes;
+			}
+		} else if (bankItem != null) {
+			if (inventory.getAmount(bankItem.getItemID()) == bankItem.getAmount()) {
+				BankHandler.removeItem(bankItem);
+			} else {
+				return bankNodes;
 			}
 		}
-		return 600; // amount of milliseconds to wait before each loop. Set to 600
+		return null;
+	}
+
+	private boolean purchaseAmountIsWrong(GEItem geItem, WithdrawItem bankItem) {
+		return bank.isOpen() && (bankItem.getAmount() - bank.getAmount(geItem.getItemID())) != geItem.getAmount();
+	}
+
+	private boolean purchaseIsCompleted(GEItem geItem, WithdrawItem bankItem) {
+		return bank.isOpen() && bank.getAmount(geItem.getItemID()) >= bankItem.getAmount();
 	}
 
 	@Override
