@@ -15,6 +15,7 @@ import org.nexus.node.bank.OpenBank;
 import org.nexus.node.bank.Withdraw;
 import org.nexus.node.ge.BuyItem;
 import org.nexus.node.ge.DepositAllButCoins;
+import org.nexus.node.ge.WalkToGE;
 import org.nexus.node.woodcutting.WalkToBank;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
@@ -58,6 +59,7 @@ public class NexusScript extends Script {
 		depositNodes.add(new Deposit().init(this));
 		depositNodes.add(new WalkToBank().init(this));
 		geNodes = new ArrayList<Node>();
+		geNodes.add(new WalkToGE().init(this));
 		geNodes.add(new DepositAllButCoins().init(this));
 		geNodes.add(new BuyItem().init(this));
 
