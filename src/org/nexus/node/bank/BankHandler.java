@@ -4,21 +4,40 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import org.nexus.objects.DepositItem;
+import org.nexus.objects.WithdrawItem;
+
 public class BankHandler {
-	public static Stack<WithdrawItem> items = new Stack<WithdrawItem>();
+	public static Stack<WithdrawItem> itemsToWithdraw = new Stack<WithdrawItem>();
+	public static Stack<DepositItem> itemsToDeposit = new Stack<DepositItem>();
 	
 	public static void addItem(WithdrawItem item) {
-		items.add(item);
+		itemsToWithdraw.add(item);
 	}
 	
 	public static void removeItem(WithdrawItem item) {
-		items.remove(item);
+		itemsToWithdraw.remove(item);
 	}
 	
-	public static WithdrawItem getItem() {
-		if(items.isEmpty()) {
+	public static WithdrawItem getWithdrawItem() {
+		if(itemsToWithdraw.isEmpty()) {
 			return null;
 		}
-		return items.peek();
+		return itemsToWithdraw.peek();
+	}
+
+	public static void addItem(DepositItem item) {
+		itemsToDeposit.add(item);
+	}
+	
+	public static void removeItem(DepositItem item) {
+		itemsToDeposit.remove(item);
+	}
+	
+	public static DepositItem getDepositItem() {
+		if(itemsToDeposit.isEmpty()) {
+			return null;
+		}
+		return itemsToDeposit.peek();
 	}
 }

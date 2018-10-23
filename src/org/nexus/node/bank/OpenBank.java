@@ -1,5 +1,6 @@
 package org.nexus.node.bank;
 
+import org.nexus.NexusScript;
 import org.nexus.node.Node;
 import org.nexus.utils.Timing;
 
@@ -7,7 +8,7 @@ public class OpenBank extends Node{
 
 	@Override
 	public boolean shallExecute() {
-		return !methodProvider.bank.isOpen();
+		return NexusScript.nodeHandler.getBankArea().contains(methodProvider.myPosition()) && !methodProvider.bank.isOpen();
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package org.nexus.node.bank;
+package org.nexus.objects;
 
 public class WithdrawItem extends RequiredItem{
 	

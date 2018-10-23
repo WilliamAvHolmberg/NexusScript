@@ -20,7 +20,7 @@ public class NexHelper implements Runnable {
 	private MethodProvider methodProvider;
 	String ip = "0.0.0.0";
 	int port = 2099;
-
+	private String newTaskMessage = "new_task";
 
 	public NexHelper(MethodProvider methodProvider) {
 		this.methodProvider = methodProvider;
@@ -109,8 +109,13 @@ public class NexHelper implements Runnable {
 			methodProvider.log("wrong");
 			methodProvider.log(e.getMessage());
 		}
-		
+
 	}
 
+	public void getNewTask() {
+		if (!messageQueue.contains(newTaskMessage)) {
+			messageQueue.push(newTaskMessage);
+		}
+	}
 
 }

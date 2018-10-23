@@ -1,8 +1,8 @@
-package org.nexus.node.bank;
+package org.nexus.objects;
 
 import org.nexus.NexusScript;
-import org.nexus.utils.Exchange;
-import org.nexus.utils.ExchangeItem;
+import org.nexus.utils.grandexchange.Exchange;
+import org.nexus.utils.grandexchange.ExchangeItem;
 
 public class GEItem extends RequiredItem {
 

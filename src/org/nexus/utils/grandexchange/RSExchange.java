@@ -1,4 +1,4 @@
-package org.nexus.utils;
+package org.nexus.utils.grandexchange;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;

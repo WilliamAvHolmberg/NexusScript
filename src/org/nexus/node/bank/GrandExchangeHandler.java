@@ -2,6 +2,8 @@ package org.nexus.node.bank;
 
 import java.util.Stack;
 
+import org.nexus.objects.GEItem;
+
 public class GrandExchangeHandler {
 public static Stack<GEItem> items = new Stack<GEItem>();
 	
