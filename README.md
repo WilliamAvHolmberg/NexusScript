@@ -27,11 +27,11 @@ This skeleton comes with a few precoded functions suchs as
 
 ### NodeHandler
 
-This is our main controller that takes care of what to do. eg. What node to execute
-Takes a task "as argument"
-E.G WoodcuttingTask
-WoodcuttingTask contains information such as bankArea, actionArea, treeName and axe
-When you create a new Task, such as WoodcuttingTask you are also required to create a controller for that task
+* This is our main controller that takes care of what to do. eg. What node to execute
+* Takes a task "as argument"
+* E.G WoodcuttingTask
+* WoodcuttingTask contains information such as bankArea, actionArea, treeName and axe
+* When you create a new Task, such as WoodcuttingTask you are also required to create a controller for that task
 #### ->WoodcuttingHandler
 In traditional use of NodeSystems your Node Class contains a "shallExecute" boolean. In our case, we let our controller take care of that logic.
 In WoodcuttingHandler we check, for instance, if player does not have axe: (Remember, axe is provided from NodeHandler as 'CurrentTask')
