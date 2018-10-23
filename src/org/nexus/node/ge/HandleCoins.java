@@ -2,16 +2,17 @@ package org.nexus.node.ge;
 
 import org.nexus.node.Node;
 import org.nexus.utils.Timing;
+import org.osbot.rs07.script.MethodProvider;
 
-public class DepositAllButCoins extends Node {
+public class HandleCoins extends Node {
 
 	@Override
-	public boolean shallExecute() {
+	public boolean shallExecute(MethodProvider methodProvider) {
 		return !methodProvider.inventory.onlyContains(995) || !methodProvider.inventory.contains(995);
 	}
 
 	@Override
-	public void execute() {
+	public void execute(MethodProvider methodProvider) {
 		if (methodProvider.bank.isOpen()) {
 			if(!methodProvider.inventory.onlyContains(995)) {
 			methodProvider.log("lets deposit all except coins");

@@ -3,23 +3,27 @@ package org.nexus.node.bank;
 import java.util.List;
 
 import org.nexus.NexusScript;
+import org.nexus.handler.BankHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.utils.Timing;
+import org.osbot.rs07.script.MethodProvider;
 
 public class Deposit extends Node {
 	private DepositItem depositItem;
 	private List<String> itemsToKeep;
 	private String[] stockArr;
+	private MethodProvider methodProvider;
 	@Override
-	public boolean shallExecute() {
+	public boolean shallExecute(MethodProvider methodProvider) {
 		return NexusScript.nodeHandler.getBankArea().contains(methodProvider.myPosition()) &&methodProvider.bank.isOpen();
 	}
 
 	@Override
-	public void execute() {
+	public void execute(MethodProvider methodProvider) {
+		this.methodProvider = methodProvider;
 		depositItem = BankHandler.getDepositItem();
 		switch(depositItem.getType()) {
 		case DEPOSIT_ALL:
@@ -51,6 +55,11 @@ public class Deposit extends Node {
 	@Override
 	public String toString() {
 		return "Withdraw From Bank";
+	}
+
+	public Node setItem(DepositItem depositItem) {
+		this.depositItem = depositItem;
+		return this;
 	}
 
 }

@@ -4,17 +4,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.nexus.handler.GrandExchangeHandler;
 import org.nexus.node.Node;
-import org.nexus.node.bank.GrandExchangeHandler;
+import org.nexus.objects.GEItem;
 import org.nexus.utils.Timing;
 import org.osbot.rs07.api.GrandExchange;
 import org.osbot.rs07.api.GrandExchange.Box;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.input.mouse.WidgetDestination;
+import org.osbot.rs07.script.MethodProvider;
 
 public class BuyItem extends Node {
 
+	private GEItem item;
 	private int itemID;
 	private int itemAmount;
 	private String itemName;
@@ -24,24 +27,26 @@ public class BuyItem extends Node {
 	private List<Box> availableBoxes;
 	private HashMap<Box, Integer[]> hash = new HashMap<Box, Integer[]>();
 	private Box boxToUse;
+	private MethodProvider methodProvider;
 
 	@Override
-	public boolean shallExecute() {
+	public boolean shallExecute(MethodProvider methodProvider) {
 		return methodProvider.inventory.onlyContains(995);
 	}
 
 	@Override
-	public void execute() {
+	public void execute(MethodProvider methodProvider) {
+		this.methodProvider = methodProvider;
 		hash.put(Box.BOX_1, new Integer[] { 465, 7 });
 		hash.put(Box.BOX_2, new Integer[] { 465, 8 });
 		hash.put(Box.BOX_3, new Integer[] { 465, 9 });
 		hash.put(Box.BOX_4, new Integer[] { 465, 10 });
 		hash.put(Box.BOX_5, new Integer[] { 465, 11 });
 		hash.put(Box.BOX_6, new Integer[] { 465, 12 });
-		itemID = GrandExchangeHandler.getItem().getItemID();
-		itemAmount = GrandExchangeHandler.getItem().getAmount();
-		itemName = GrandExchangeHandler.getItem().getItemName();
-		itemPrice = GrandExchangeHandler.getItem().getItemPrice();
+		itemID = item.getItemID();
+		itemAmount = item.getAmount();
+		itemName = item.getItemName();
+		itemPrice = item.getItemPrice();
 		methodProvider.log("lets buy item:" + itemID);
 		if (openGE()) {
 			methodProvider.log("ge is open");
@@ -137,6 +142,11 @@ public class BuyItem extends Node {
 	@Override
 	public String toString() {
 		return "Buy Item";
+	}
+	
+	public Node setItem(GEItem item) {
+		this.item = item;
+		return this;
 	}
 
 }

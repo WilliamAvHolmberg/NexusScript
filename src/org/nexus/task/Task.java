@@ -2,6 +2,7 @@ package org.nexus.task;
 
 import java.util.function.BooleanSupplier;
 
+import org.nexus.handler.gear.Gear;
 import org.osbot.rs07.api.map.Area;
 
 public abstract class Task {
@@ -10,6 +11,8 @@ public abstract class Task {
 	private Area actionArea;
 	private BooleanSupplier condition;
 	private TaskType taskType;
+	private Gear preferredGear;
+	public static Gear EMPTY_GEAR = new Gear();
 	
 	public Area getBankArea() {
 		return bankArea;
@@ -35,5 +38,15 @@ public abstract class Task {
 	}
 	public void setTaskType(TaskType taskType) {
 		this.taskType = taskType;
+	}
+	public Gear getPreferredGear() {
+		if(this.preferredGear == null) {
+			return EMPTY_GEAR;
+		}
+		return this.preferredGear;
+	}
+	
+	public void setPreferredGear(Gear gear) {
+		this.preferredGear = gear;
 	}
 }

@@ -6,42 +6,42 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.nexus.communication.NexHelper;
+import org.nexus.handler.BankHandler;
+import org.nexus.handler.GrandExchangeHandler;
+import org.nexus.handler.NodeHandler;
+import org.nexus.handler.gear.Gear;
+import org.nexus.handler.gear.GearHandler;
 import org.nexus.node.Node;
-import org.nexus.node.NodeHandler;
-import org.nexus.node.bank.BankHandler;
 import org.nexus.node.bank.Deposit;
-import org.nexus.node.bank.GrandExchangeHandler;
 import org.nexus.node.bank.OpenBank;
 import org.nexus.node.bank.Withdraw;
 import org.nexus.node.ge.BuyItem;
-import org.nexus.node.ge.DepositAllButCoins;
-import org.nexus.node.ge.WalkToGE;
-import org.nexus.node.woodcutting.WalkToBank;
+import org.nexus.node.ge.HandleCoins;
+import org.nexus.node.general.WalkToArea;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
+import org.nexus.objects.RSItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.task.Task;
 import org.nexus.task.WoodcuttingTask;
 import org.nexus.utils.grandexchange.RSExchange;
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
-@ScriptManifest(author = "Nex", info = "", logo = "", name = "NEX", version = 0)
+@ScriptManifest(author = "Nex", info = "", logo = "", name = "NEXW", version = 0)
 public class NexusScript extends Script {
 
 	public static boolean SHOULD_RUN = true;
 	NexHelper helper;
 	Thread nexHelperThread;
-	List<Node> withdrawNodes;
-	List<Node> depositNodes;
-	List<Node> geNodes;
-	List<Node> nodes;
 	private Node currentNode;
 	public static NodeHandler nodeHandler;
 	public static Task currentTask;
 	private String[] stockArr;
+	private Node node;
 
 	@Override
 	public void onStart() {
@@ -50,18 +50,6 @@ public class NexusScript extends Script {
 		// initialize a new thread for NexHelper
 		nexHelperThread = new Thread(helper);
 		nexHelperThread.start();
-		withdrawNodes = new ArrayList<Node>();
-		withdrawNodes.add(new OpenBank().init(this));
-		withdrawNodes.add(new Withdraw().init(this));
-		withdrawNodes.add(new WalkToBank().init(this));
-		depositNodes = new ArrayList<Node>();
-		depositNodes.add(new OpenBank().init(this));
-		depositNodes.add(new Deposit().init(this));
-		depositNodes.add(new WalkToBank().init(this));
-		geNodes = new ArrayList<Node>();
-		geNodes.add(new WalkToGE().init(this));
-		geNodes.add(new DepositAllButCoins().init(this));
-		geNodes.add(new BuyItem().init(this));
 
 		// init node Handler
 		nodeHandler = new NodeHandler(this);
@@ -69,13 +57,20 @@ public class NexusScript extends Script {
 		// BankHandler.addItem(new WithdrawItem(385, 77, "Shark"));
 		List<String> itemsToKeep = new ArrayList<String>();
 		itemsToKeep.add("Coins");
-		BankHandler.addItem(new DepositItem(DepositItem.DepositType.DEPOSIT_ALL_EXCEPT, itemsToKeep));
+		//BankHandler.addItem(new DepositItem(DepositItem.DepositType.DEPOSIT_ALL_EXCEPT, itemsToKeep));
 		// fill NodeHandler with nodes
 		// NodeHandler.add(new Node().init(this));
-
+	
+		RSItem runeAxe = new RSItem("Rune axe", 1359);
+		RSItem dragonAxe = new RSItem("Dragon axe", 6739);
+		RSItem axe = runeAxe;
+		Gear gear = new Gear();
+		gear.addGear(EquipmentSlot.WEAPON, axe);
 		Area area = new Area(
 				new int[][] { { 3199, 3206 }, { 3187, 3206 }, { 3181, 3238 }, { 3197, 3253 }, { 3201, 3252 } });
-		currentTask = new WoodcuttingTask(area, null, () -> skills.getStatic(Skill.WOODCUTTING) > 99, "Iron axe", 1349, "Tree");
+		currentTask = new WoodcuttingTask(area, null, () -> skills.getStatic(Skill.WOODCUTTING) > 99, axe,
+				"Tree");
+		//currentTask.setPreferredGear(gear);
 	}
 
 	@Override
@@ -101,98 +96,14 @@ public class NexusScript extends Script {
 	}
 
 	private void handleStates() {
-		nodes = getNodes();
-		if (nodes != null) {
-			for (Node node : nodes) {
-				log(node);
-				if (node.shallExecute()) {
-					currentNode = node;
-					node.execute();
-					break;
-				}
-			}
+		node = nodeHandler.getNode();
+		if (node != null) {
+			currentNode = node;
+			node.execute(this);
+
 		}
 	}
 
-	/**
-	 * shall execute GE NODES if BUY_LIST is not empty shall execute BANK_NODES if
-	 * WITHDRAW_LIST is not empty TODO - shall execute EQUIP_NODES if EQUIP_LIST is
-	 * not empty TODO - return TASK_NODES if all above is empty
-	 */
-	private List<Node> getNodes() {
-		nodes = nodeHandler.getNodes(currentTask);
-		GEItem geItem = GrandExchangeHandler.getItem();
-		WithdrawItem withdrawItem = BankHandler.getWithdrawItem();
-		DepositItem depositItem = BankHandler.getDepositItem();
-
-		if (geItem != null) {
-			return getGeNodes(geItem, withdrawItem);
-		} else if (depositItem != null) {
-			return getDepositNodes(depositItem);
-		} else if (withdrawItem != null) {
-			return getWithdrawNodes(withdrawItem);
-		} else {
-			if(nodes != null) {
-				log(nodes.size());
-			}
-			return nodes;
-		}
-	}
-
-	private List<Node> getGeNodes(GEItem geItem, WithdrawItem withdrawItem) {
-		if (purchaseIsCompleted(geItem, withdrawItem)) {
-			GrandExchangeHandler.removeItem(geItem);
-		} else if (purchaseAmountIsWrong(geItem, withdrawItem)) {
-			geItem.setAmount((int) (withdrawItem.getAmount() - bank.getAmount(geItem.getItemID())));
-		} else {
-			return geNodes;
-		}
-		return null;
-	}
-
-	private List<Node> getWithdrawNodes(WithdrawItem withdrawItem) {
-		if (inventory.getAmount(withdrawItem.getItemID()) == withdrawItem.getAmount()) {
-			BankHandler.removeItem(withdrawItem);
-			return null;
-		} else {
-			return withdrawNodes;
-		}
-	}
-
-	private List<Node> getDepositNodes(DepositItem depositItem) {
-		checkIfDepositIsCompleted(depositItem);
-		// check if bankHandler still contains depositItem
-		if (BankHandler.itemsToDeposit.contains(depositItem)) {
-			return depositNodes;
-		}
-		return null;
-	}
-
-	private void checkIfDepositIsCompleted(DepositItem depositItem) {
-		switch (depositItem.getType()) {
-		case DEPOSIT_ALL:
-			if (inventory.isEmpty()) {
-				BankHandler.removeItem(depositItem);
-			}
-			break;
-		case DEPOSIT_ALL_EXCEPT:
-			stockArr = new String[depositItem.getItems().size()];
-			if (inventory.isEmptyExcept(depositItem.getItems().toArray((stockArr)))) {
-				BankHandler.removeItem(depositItem);
-			}
-			break;
-		default:
-			break;
-		}
-	}
-
-	private boolean purchaseAmountIsWrong(GEItem geItem, WithdrawItem withdrawItem) {
-		return bank.isOpen() && (withdrawItem.getAmount() - bank.getAmount(geItem.getItemID())) != geItem.getAmount();
-	}
-
-	private boolean purchaseIsCompleted(GEItem geItem, WithdrawItem withdrawItem) {
-		return bank.isOpen() && bank.getAmount(geItem.getItemID()) >= withdrawItem.getAmount();
-	}
 
 	@Override
 	public void onPaint(Graphics2D g) {
@@ -207,6 +118,9 @@ public class NexusScript extends Script {
 		}
 		if (!BankHandler.itemsToDeposit.isEmpty()) {
 			g.drawString("lets deposit:" + BankHandler.itemsToDeposit.peek().getType(), 50, 100);
+		}
+		if (!GearHandler.itemsToEquip.isEmpty()) {
+			g.drawString("lets equip:" + GearHandler.itemsToEquip.peek().getItem().getName(), 50, 125);
 		}
 	}
 

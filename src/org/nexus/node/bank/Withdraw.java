@@ -1,10 +1,13 @@
 package org.nexus.node.bank;
 
 import org.nexus.NexusScript;
+import org.nexus.handler.BankHandler;
+import org.nexus.handler.GrandExchangeHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.utils.Timing;
+import org.osbot.rs07.script.MethodProvider;
 
 public class Withdraw extends Node {
 
@@ -14,12 +17,12 @@ public class Withdraw extends Node {
 	int amountRequiredFromGE;
 	int invAmountPreWithdraw;
 	@Override
-	public boolean shallExecute() {
+	public boolean shallExecute(MethodProvider methodProvider) {
 		return NexusScript.nodeHandler.getBankArea().contains(methodProvider.myPosition()) && methodProvider.bank.isOpen();
 	}
 
 	@Override
-	public void execute() {
+	public void execute(MethodProvider methodProvider) {
 		item = BankHandler.getWithdrawItem();
 		invAmountPreWithdraw = (int) methodProvider.inventory.getAmount(item.getItemID());
 		amountRequired = item.getAmount() - invAmountPreWithdraw;
@@ -42,6 +45,11 @@ public class Withdraw extends Node {
 	@Override
 	public String toString() {
 		return "Withdraw From Bank";
+	}
+
+	public Node setItem(WithdrawItem withdrawItem) {
+		this.item = withdrawItem;
+		return this;
 	}
 
 }
