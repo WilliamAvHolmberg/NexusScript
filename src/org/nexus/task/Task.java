@@ -4,6 +4,7 @@ import java.util.function.BooleanSupplier;
 
 import org.nexus.handler.gear.Gear;
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.ui.Skill;
 
 public abstract class Task {
 
@@ -49,4 +50,6 @@ public abstract class Task {
 	public void setPreferredGear(Gear gear) {
 		this.preferredGear = gear;
 	}
+	
+	public abstract Skill getSkill();
 }

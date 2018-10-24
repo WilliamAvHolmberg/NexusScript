@@ -4,6 +4,7 @@ import java.util.function.BooleanSupplier;
 
 import org.nexus.objects.RSItem;
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.ui.Skill;
 
 public class WoodcuttingTask extends Task {
 
@@ -19,6 +20,8 @@ public class WoodcuttingTask extends Task {
 		this.axe = axe;
 	}
 
+
+
 	public String getAxeName() {
 		return axe.getName();
 	}
@@ -33,5 +36,9 @@ public class WoodcuttingTask extends Task {
 
 	public RSItem getAxe() {
 		return axe;
+	}
+	
+	public Skill getSkill() {
+		return Skill.WOODCUTTING;
 	}
 }
