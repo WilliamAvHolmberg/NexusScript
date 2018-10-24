@@ -71,7 +71,7 @@ public class NexusScript extends Script {
 		gear.addGear(EquipmentSlot.WEAPON, axe);
 		Area area = new Area(
 				new int[][] { { 3199, 3206 }, { 3187, 3206 }, { 3181, 3238 }, { 3197, 3253 }, { 3201, 3252 } });
-		currentTask = new WoodcuttingTask(area, null, () -> skills.getStatic(Skill.WOODCUTTING) > 99, axe, "Tree");
+		//currentTask = new WoodcuttingTask(area, null, () -> skills.getStatic(Skill.WOODCUTTING) > 99, axe, "Tree");
 		// currentTask.setPreferredGear(gear);
 
 		experienceTracker.start(Skill.WOODCUTTING);

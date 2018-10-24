@@ -22,23 +22,36 @@ import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
 public class NexHelper implements Runnable {
-	Stack<String> messageQueue;
-	long lastLog = 0;
-	private String respond = "none";
 	private MethodProvider methodProvider;
-	String ip = "192.168.10.127";
-	int port = 2099;
-	private String newTaskMessage = "new_task";
+	private String ip = "192.168.10.127";
+	private int port = 2099;
+	private long lastLog = 0;
+
+	private Stack<String> messageQueue;
+	private final String newTaskMessage = "NEW_TASK";
+	private final String disconnectMessage = "DISCONNECT";
+	private String respond = "none";
+
+	private String parsedTaskType;
+	private String parsedBankArea;
+	private String parsedActionArea;
+	private String parsedAxeID;
+	private String axeName;
+	private String treeName;
+	private Area bankArea;
+	private Area actionArea;
+	private RSItem axe;
+
 
 	public NexHelper(MethodProvider methodProvider) {
 		this.methodProvider = methodProvider;
 		messageQueue = new Stack<String>();
-		methodProvider.log("inited com");
+		methodProvider.log("initiated NexHelper");
 	}
 
 	@Override
 	public void run() {
-		methodProvider.log("started run");
+		methodProvider.log("started NexHelper");
 		try {
 			Socket socket = new Socket(ip, port);
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -54,31 +67,28 @@ public class NexHelper implements Runnable {
 				if (!messageQueue.isEmpty()) {
 					nextRequest = messageQueue.pop();
 					String[] parsed = nextRequest.split(":");
-					switch (parsed[0]) {
-					case "disconnect":
+					String string = parsed[0];
+					
+					if (string.equals(disconnectMessage)) {
 						NexusScript.SHOULD_RUN = false;
 						log(out, in);
-						break;
-					case "new_task":
+					} else if (string.equals(newTaskMessage)) {
 						methodProvider.log("lets request new task");
 						requestTask(out, in);
-						break;
-					case "task_respond":
+					} else if (string.equals("task_respond")) {
 						if (parsed[1].equals("1")) {
 							handleTaskRespond(parsed);
-							log(out,in);
+							log(out, in);
 						} else {
 							// unsuccessful task_respond. lets stop
 							NexusScript.SHOULD_RUN = false;
 							log(out, in);
 						}
-						break;
-					default:
+					} else {
 						log(out, in);
-						break;
 					}
 				} else {
-					methodProvider.log("lets log");
+					//methodProvider.log("lets log");
 					log(out, in);
 					Thread.sleep(1000);
 				}
@@ -96,59 +106,30 @@ public class NexHelper implements Runnable {
 		 * respond[2] == task_type respond[3] == bank_area respond[4] == actionarea -
 		 * coordinates respond[5] == axeID respond[6] == axeName respond[7] == treeName
 		 */
-		String parsedTaskType = parsed[2];
-		String parsedBankArea = parsed[3];
-		String parsedActionArea = parsed[4];
-		String parsedAxeID = parsed[5];
-		String axeName = parsed[6];
-		String treeName = parsed[7];
-		TaskType taskType = TaskType.getType(parsedTaskType);
-		Area bankArea;
+		parsedTaskType = parsed[2];
+		parsedBankArea = parsed[3];
+		parsedActionArea = parsed[4];
+		parsedAxeID = parsed[5];
+		axeName = parsed[6];
+		treeName = parsed[7];
+
 		if (parsedBankArea.equals("none")) {
 			bankArea = null;
 		} else {
-			// bankArea = WebBank.parseCoordinates(parsedBankArea);
+			bankArea = WebBank.parseCoordinates(parsedBankArea);
 		}
-		// Area actionArea = WebBank.parseCoordinates(parsedActionArea);
 		int axeID = Integer.parseInt(parsedAxeID);
-
-
-		String parsedCoordinates = "";
-
-		// if last, do not add ":"
-		for (String coord : parsedActionArea.split("\\{")) {
-			String newCoord = coord.replaceAll("\\},", "").replaceAll("\\}", "").replaceAll(" ", "");
-			if (newCoord.length() > 3) {
-				parsedCoordinates = parsedCoordinates + newCoord + ":";
-			}
-		}
-		Position[] newCoordinates = new Position[parsedCoordinates.split(":").length];
-		String[] almostReadyCoordinates = parsedCoordinates.split(":");
-		for (int i = 0; i < almostReadyCoordinates.length; i++) {
-			String[] parsedCoords = almostReadyCoordinates[i].split(",");
-			int coordinate1 = Integer.parseInt(parsedCoords[0]);
-			int coordinate2 = Integer.parseInt(parsedCoords[1]);
-			if (coordinate1 > 500 && coordinate2 > 500) {
-				Position newPos = new Position(coordinate1, coordinate2,0);
-				newCoordinates[i] = newPos;
-			}
-		}
-		for(Position coords : newCoordinates) {
-			methodProvider.log("Coord:" + coords);
-		}
-		Area actionArea = new Area(newCoordinates);
-		RSItem axe = new RSItem(axeName, axeID);
-		NexusScript.currentTask = new WoodcuttingTask(actionArea, null , () -> methodProvider.skills.getStatic(Skill.WOODCUTTING) > 99, axe, treeName);
-
+		actionArea = WebBank.parseCoordinates(parsedActionArea);
+		axe = new RSItem(axeName, axeID);
+		NexusScript.currentTask = new WoodcuttingTask(actionArea, bankArea,
+				() -> methodProvider.skills.getStatic(Skill.WOODCUTTING) > 99, axe, treeName);
 
 	}
 
 	private void requestTask(PrintWriter out, BufferedReader in) throws IOException {
-		methodProvider.log("sending task request");
 		out.println("task_request:1");
-		methodProvider.log("sent task request");
 		respond = in.readLine();
-		methodProvider.log("got respond" + respond);
+		methodProvider.log("got respond from task_request:" + respond);
 		handleRespond(respond);
 	}
 
@@ -158,38 +139,43 @@ public class NexHelper implements Runnable {
 		}
 	}
 
+	/*
+	 * Method to take care of every log
+	 */
 	private void log(PrintWriter out, BufferedReader in) throws InterruptedException, IOException {
 		if (System.currentTimeMillis() - lastLog > 5000) { // only log every 5 sec
-			methodProvider.log("sending log");
 			out.println("log:0");
-			methodProvider.log("sent log");
 			respond = in.readLine();
-			methodProvider.log("got respond" + respond);
 			handleRespond(respond);
 			lastLog = System.currentTimeMillis();
 		}
 
 	}
 
+	/*
+	 * reads the respond from server
+	 * if respond is anything else than the 'standard' - "logged:fine"
+	 * put respond to messageQueue
+	 */
 	private void handleRespond(String respond2) {
-		// standard message is 'logged:fine'
-		// if respond is anything else than logged:fine we can assume it is a new
-		// instruction
 		if (!respond.equals("logged:fine")) {
-			System.out.println("we got a new instructionToQueue:" + respond);
 			messageQueue.push(respond);
 		}
 	}
 
+	/*
+	 * Initialize contact towards socket
+	 * if connection fails, stop script
+	 */
 	private void initializeContactToSocket(PrintWriter out, BufferedReader in) throws IOException {
-		methodProvider.log("bla");
+		//methodProvider.log("bla");
 		out.println("script:1:" + getIP() + ":" + methodProvider.bot.getUsername());
 		if (in.readLine().equals("connected:1")) {
 			methodProvider.log("NexHelper has been initialized towards Nexus");
 		} else {
 			methodProvider.log("Connection Towards Nexus failed");
+			messageQueue.push(disconnectMessage);
 		}
-		methodProvider.log("exit");
 	}
 
 	public String getIP() {
