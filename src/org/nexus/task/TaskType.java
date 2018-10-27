@@ -1,7 +1,7 @@
 package org.nexus.task;
 
 public enum TaskType {
-	WOODCUTTING;
+	WOODCUTTING, BREAK;
 
 	public static TaskType getType(String taskType) {
 		switch(taskType) {
