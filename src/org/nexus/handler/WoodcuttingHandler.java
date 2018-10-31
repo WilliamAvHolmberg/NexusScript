@@ -42,7 +42,9 @@ public class WoodcuttingHandler extends Handler {
 			return null;
 		} else if (methodProvider.inventory.isFull() || playerInBank() && shouldDepositUnnecessaryItems(wcTask)) { //TODO, maybe add method, getInventory at bank
 			itemsToKeep = new ArrayList<String>();
-			itemsToKeep.add(axeName);
+			if(!methodProvider.equipment.isWieldingWeapon(axeName)) {
+				itemsToKeep.add(axeName);
+			}
 			BankHandler.addItem(new DepositItem(DepositItem.DepositType.DEPOSIT_ALL_EXCEPT, itemsToKeep));
 		} else if(!playerInActionArea()){
 			return walkToAreaNode.setArea(wcTask.getActionArea());

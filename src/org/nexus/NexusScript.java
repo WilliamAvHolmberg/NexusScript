@@ -7,9 +7,11 @@ import java.util.List;
 
 import org.nexus.communication.NexHelper;
 import org.nexus.event.LoginEvent;
+import org.nexus.event.LoginListener;
 import org.nexus.handler.BankHandler;
 import org.nexus.handler.GrandExchangeHandler;
 import org.nexus.handler.NodeHandler;
+import org.nexus.handler.SimpleCacheManager;
 import org.nexus.handler.TaskHandler;
 import org.nexus.handler.gear.Gear;
 import org.nexus.handler.gear.GearHandler;
@@ -35,7 +37,7 @@ import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 
-@ScriptManifest(author = "Nex", info = "", logo = "", name = "NEX", version = 0)
+@ScriptManifest(author = "Nex", info = "", logo = "", name = "NEX", version = 0.1)
 public class NexusScript extends Script {
 
 	public static boolean SHOULD_RUN = true;
@@ -48,12 +50,21 @@ public class NexusScript extends Script {
 	private Node node;
 	private LoginEvent logEvent;
 	public static MethodProvider methodProvider;
+	String username;
+	String password;
 
 	@Override
 	public void onStart() {
+		
+		
+		
 		// override login
 		// TODO load login from bot, password should be same for ALL
-		logEvent = new LoginEvent("beewood@mail.com", "ugot00wned2", this);
+		username = bot.getUsername();
+		password = getPassword();
+		log(password);
+		logEvent = new LoginEvent(this,username, password, this);
+		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
 		// create new NexHelper
 		helper = new NexHelper(this);
 		// initialize a new thread for NexHelper
@@ -85,6 +96,17 @@ public class NexusScript extends Script {
 		experienceTracker.start(Skill.WOODCUTTING);
 	}
 
+	private String getPassword() {
+		if(getParameters() != null) {
+			String[] params = getParameters().split("_");
+			log(params);
+			log(getParameters());
+			password = params[0];
+			return password;
+		}
+		return "ugot00wned2";
+	}
+
 	@Override
 	public int onLoop() throws InterruptedException {
 		// SHOULD_RUN is static and can be accessed from anywhere
@@ -98,7 +120,6 @@ public class NexusScript extends Script {
 		} else if (currentTask.isCompleted()) {
 			handleCompletedTask();
 		} else {
-			log("Hello?");
 			handleStates();
 		}
 
@@ -126,25 +147,22 @@ public class NexusScript extends Script {
 		if (currentTask.getTaskType() == TaskType.BREAK && client.isLoggedIn()) {
 			logoutTab.logOut();
 		} else if (!client.isLoggedIn()) {
-			log("we are not logged in cmon");
 			login();
 		} else if (node != null) {
-			log("executing, rly?");
 			currentNode = node;
+			log("lets execute");
 			node.execute(this);
 		}
 	}
 
 	private void login() {
-		logEvent = new LoginEvent("beewood@mail.com", "ugot00wned2", this);
-		log("trying to execute");
-		getBot().addLoginListener(logEvent);
+		logEvent = new LoginEvent(this,username, password, this);
 		execute(logEvent);
-		log("executed login");
 	}
 
 	@Override
 	public void onPaint(Graphics2D g) {
+		g.drawString("Current IP: " + getIP(), 50,200);
 		if (currentNode != null) {
 			g.drawString("Current Node:" + currentNode, 50, 50);
 		}
@@ -179,6 +197,14 @@ public class NexusScript extends Script {
 
 		g.drawString("Tasks: " + TaskHandler.getTaskList(), 350, 150);
 
+	}
+
+	private String getIP() {
+		if(SimpleCacheManager.getInstance().get("IP") != null) {
+			return (String) SimpleCacheManager.getInstance().get("IP");
+		}else {
+			return (String) SimpleCacheManager.getInstance().put("IP", NexHelper.getIP());
+		}
 	}
 
 	@Override

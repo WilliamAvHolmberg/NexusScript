@@ -13,6 +13,7 @@ import org.nexus.node.general.WalkToArea;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.task.Task;
+import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.script.MethodProvider;
 
 public class BankHandler extends Handler {
@@ -68,8 +69,10 @@ public class BankHandler extends Handler {
 		} else if (!playerInBank()) {
 			return walkToAreaNode.setArea(getBankArea());
 		} else if (!bankIsOpen()) {
+			methodProvider.log("in bank");
 			return openBankNode;
 		} else {
+			methodProvider.log("lets deposit");
 			return depositNode.setItem(depositItem);
 		}
 	}
@@ -83,7 +86,7 @@ public class BankHandler extends Handler {
 			break;
 		case DEPOSIT_ALL_EXCEPT:
 			stockArr = new String[depositItem.getItems().size()];
-			if (methodProvider.inventory.isEmptyExcept(depositItem.getItems().toArray((stockArr)))) {
+			if (methodProvider.inventory.isEmptyExcept(depositItem.getItems().toArray((stockArr))) ) {
 				BankHandler.removeItem(depositItem);
 			}
 			break;
@@ -91,6 +94,8 @@ public class BankHandler extends Handler {
 			break;
 		}
 	}
+
+
 
 	public static void addItem(WithdrawItem item) {
 		itemsToWithdraw.add(item);

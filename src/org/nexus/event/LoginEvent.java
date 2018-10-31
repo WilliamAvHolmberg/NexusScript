@@ -1,6 +1,7 @@
 package org.nexus.event;
 
 import org.nexus.NexusScript;
+import org.nexus.communication.NexHelper;
 import org.nexus.task.TaskType;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.constants.ResponseCode;
@@ -8,28 +9,35 @@ import org.osbot.rs07.event.Event;
 import org.osbot.rs07.input.mouse.RectangleDestination;
 import org.osbot.rs07.listener.LoginResponseCodeListener;
 import org.osbot.rs07.script.MethodProvider;
+import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import java.awt.*;
 
-public final class LoginEvent extends Event implements LoginResponseCodeListener {
+public final class LoginEvent extends Event {
 
 	private final String username, password;
 	private MethodProvider methodProvider;
+	Script context;
 
-	public LoginEvent(final String username, final String password, MethodProvider methodProvider) {
+	public LoginEvent(Script context, final String username, final String password, MethodProvider methodProvider) {
+		this.context = context;
 		this.username = username;
 		this.password = password;
 		this.methodProvider = methodProvider;
 		setAsync();
+		methodProvider.log("printing");
 	}
 
 	@Override
 	public final int execute() throws InterruptedException {
-		methodProvider.log("why are w enot calling this shit");
+		methodProvider.log("why are wenot calling this shit");
 		if (!(NexusScript.currentTask != null && NexusScript.currentTask.getTaskType() == TaskType.BREAK && !NexusScript.currentTask.isCompleted())) {
 			methodProvider.log("log in:");
-			if (!getBot().isLoaded()) {
+			if(isDisabledMessageVisible()) {
+				NexHelper.messageQueue.push("BANNED");
+			}
+			else if (!getBot().isLoaded()) {
 				return 1000;
 			} else if (getClient().isLoggedIn() && getLobbyButton() == null) {
 				getBot().getScriptExecutor().resume();
@@ -47,7 +55,6 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 			}
 			return random(100, 150);
 		}else {
-			methodProvider.log("Task:Break. lets not login until break is done");
 			return 5000;
 		}
 	}
@@ -128,7 +135,7 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 	}
 
 	private boolean isDisabledMessageVisible() {
-		return getColorPicker().isColorAt(483, 205, Color.YELLOW);
+		return getColorPicker().isColorAt(483, 192, new Color(255,255,0));
 	}
 
 	private void clickLobbyButton() {
@@ -146,18 +153,6 @@ public final class LoginEvent extends Event implements LoginResponseCodeListener
 		return getWidgets().getWidgetContainingText("CLICK HERE TO PLAY");
 	}
 
-	@Override
-	public final void onResponseCode(final int responseCode) throws InterruptedException {
-		if (ResponseCode.isDisabledError(responseCode)) {
-			log("Login failed, account is disabled");
-			setFailed();
-			return;
-		}
 
-		if (ResponseCode.isConnectionError(responseCode)) {
-			log("Connection error, attempts exceeded");
-			setFailed();
-			return;
-		}
-	}
+	
 }

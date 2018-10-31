@@ -1,5 +1,6 @@
 package org.nexus.communication;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,13 +26,11 @@ import org.osbot.rs07.script.MethodProvider;
 
 public class NexHelper implements Runnable {
 	private MethodProvider methodProvider;
-	private String ip = "192.168.10.127";
-	private int port = 2099;
+	private String ip = "oxnet.zapto.org";
+	private int port = 43594;
 	private long lastLog = 0;
 
-	private Stack<String> messageQueue;
-	private final String newTaskMessage = "NEW_TASK";
-	private final String disconnectMessage = "DISCONNECT";
+	public static Stack<String> messageQueue;
 	private String respond = "none";
 
 	private String parsedBankArea;
@@ -50,6 +49,9 @@ public class NexHelper implements Runnable {
 	private String currentTaskID;
 	private int axeID;
 	private Task newTask;
+	private String nextRequest;
+	private String[] parsed;
+	private String string;
 
 	public NexHelper(MethodProvider methodProvider) {
 		this.methodProvider = methodProvider;
@@ -68,124 +70,95 @@ public class NexHelper implements Runnable {
 			methodProvider.log("lets init");
 			initializeContactToSocket(out, in);
 
-			String nextRequest;
+			whileShouldRun(out, in); // main loop, always run while script should be running
 
-			while (NexusScript.SHOULD_RUN) {
-				methodProvider.log("Ready to take new instructions...last respond:" + respond);
-				if (!messageQueue.isEmpty()) {
-					nextRequest = messageQueue.pop();
-					String[] parsed = nextRequest.split(":");
-					String string = parsed[0];
-
-					if (string.equals(disconnectMessage)) {
-						NexusScript.SHOULD_RUN = false;
-						log(out, in);
-					} else if (string.equals(newTaskMessage)) {
-						methodProvider.log("lets request new task");
-						requestTask(out, in);
-					} else if (string.equals("task_respond")) {
-						if (parsed[1].equals("1")) {
-							handleTaskRespond(parsed);
-							log(out, in);
-						} else {
-							// unsuccessful task_respond. lets stop
-							NexusScript.SHOULD_RUN = false;
-							log(out, in);
-						}
-					} else if (string.equals("TASK_LOG")) {
-						methodProvider.log("lets update task log");
-						log(nextRequest, out, in);
-					} else {
-						log(out, in);
-					}
-				} else {
-					// methodProvider.log("lets log");
-					log(out, in);
-					Thread.sleep(1000);
-				}
-			}
 		} catch (Exception e) {
-			methodProvider.log("wrong");
 			methodProvider.log(e.getLocalizedMessage());
 		}
 
 	}
 
-	private void handleTaskRespond(String[] parsed) {
-		taskType = parsed[2];
-
-		switch (taskType) {
-		case "WOODCUTTING":
-			currentTaskID = parsed[3];
-			parsedBankArea = parsed[4];
-			parsedActionArea = parsed[5];
-			parsedAxeID = parsed[6];
-			axeName = parsed[7];
-			treeName = parsed[8];
-			parsedBreakCondition = parsed[9];
-			breakAfter = parsed[10];
-			breakCondition = getBreakCondition(parsedBreakCondition, breakAfter);
-			if (parsedBankArea.equals("none")) {
-				bankArea = null;
+	private void whileShouldRun(PrintWriter out, BufferedReader in) throws IOException, InterruptedException {
+		while (NexusScript.SHOULD_RUN) {
+			checkIfBanned(out, in);
+			if (!messageQueue.isEmpty()) {
+				handleMessageQueue(out, in);
 			} else {
-				bankArea = WebBank.parseCoordinates(parsedBankArea);
+				// methodProvider.log("lets log");
+				log(out, in);
+				Thread.sleep(1000);
 			}
-			axeID = Integer.parseInt(parsedAxeID);
-			actionArea = WebBank.parseCoordinates(parsedActionArea);
-			axe = new RSItem(axeName, axeID);
-			methodProvider.log("Axe:" + axe.getId() + ":" + axe.getName());
-			methodProvider.log("Break in: "
-					+ (((currentTime + (Integer.parseInt(breakAfter) * 1000 * 60) - currentTime)) / 60000 + "minutes"));
-			newTask = new WoodcuttingTask(actionArea, bankArea, breakCondition, axe, treeName);
-			newTask.setBreakType(parsedBreakCondition);
-			newTask.setBreakAfter(breakAfter);
-			newTask.setTimeStartedMilli(currentTime);
-			newTask.setTaskID(currentTaskID);
-			TaskHandler.addTask(newTask);
-			break;
-		case "BREAK":
-			currentTaskID = parsed[3];
-			parsedBreakCondition = parsed[4];
-			breakAfter = parsed[5];
-			newTask = new Task();
-			newTask.setTaskType(TaskType.BREAK);
-			newTask.setBreakType(parsedBreakCondition);
-			newTask.setCondition(getBreakCondition(parsedBreakCondition, breakAfter));
-			newTask.setBreakAfter(breakAfter);
-			newTask.setTimeStartedMilli(currentTime);
-			newTask.setTaskID(currentTaskID);
-			TaskHandler.addTask(newTask);
-			break;
-
 		}
 
 	}
 
-	private BooleanSupplier getBreakCondition(String parsedBreakCondition, String breakAfter) {
-		if (parsedBreakCondition.equals("LEVEL")) {
-			return breakCondition = () -> methodProvider.skills.getStatic(Skill.WOODCUTTING) > Integer
-					.parseInt(breakAfter);
-		} else if (parsedBreakCondition.equals("TIME")) {
-			currentTime = System.currentTimeMillis();
-			return breakCondition = () -> System.currentTimeMillis() > currentTime
-					+ Integer.parseInt(breakAfter) * 1000 * 60;
+	private void handleMessageQueue(PrintWriter out, BufferedReader in) throws InterruptedException, IOException {
+		nextRequest = messageQueue.pop();
+		methodProvider.log(nextRequest);
+		parsed = nextRequest.split(":");
+		string = parsed[0];
+
+		switch (string) {
+		case "DISCONNECT":
+			NexusScript.SHOULD_RUN = false;
+			log(out, in);
+			break;
+		case "BANNED":
+			sendBannedMessage(out, in);
+			break;
+		case "NEW_TASK":
+			methodProvider.log("lets request new task");
+			requestTask(out, in);
+			break;
+		case "task_respond":
+			handleTaskRespond(parsed);
+			log(out, in);
+			break;
+		case "TASK_LOG":
+			methodProvider.log("lets update task log");
+			log(nextRequest, out, in);
+			break;
+		default:
+			log(out, in);
+			break;
 		}
-		return null;
+
 	}
 
-	private void requestTask(PrintWriter out, BufferedReader in) throws IOException {
-		out.println("task_request:1");
-		respond = in.readLine();
-		methodProvider.log("got respond from task_request:" + respond);
-		handleRespond(respond);
+	/*
+	 * Initialize contact towards socket if connection fails, stop script
+	 */
+	private void initializeContactToSocket(PrintWriter out, BufferedReader in) throws IOException {
+		// methodProvider.log("bla");
+		out.println("script:1:" + getIP() + ":" + methodProvider.bot.getUsername());
+		if (in.readLine().equals("connected:1")) {
+			methodProvider.log("NexHelper has been initialized towards Nexus");
+		} else {
+			methodProvider.log("Connection Towards Nexus failed");
+			messageQueue.push("DISCONNECT");
+		}
 	}
 
-	public void getNewTask() {
-		newTask = TaskHandler.popTask();
-		if (newTask != null) {
-			NexusScript.currentTask = newTask;
-		} else if (!messageQueue.contains(newTaskMessage)) {
-			messageQueue.push(newTaskMessage);
+	private String getRespond() {
+		if (NexusScript.currentTask != null) {
+			respond = "log:1:" + NexusScript.currentTask.getTaskID();
+		}
+		return "log:0";
+	}
+
+	/*
+	 * reads the respond from server if respond is anything else than the 'standard'
+	 * - "logged:fine" put respond to messageQueue
+	 */
+	private void handleRespond(String respond2) {
+		if (!respond.equals("logged:fine")) {
+			messageQueue.push(respond);
+		}
+	}
+
+	public void createLog(Task currentTask) {
+		if (currentTask != null) {
+			messageQueue.push("task_log:" + currentTask.getTaskID() + ":" + currentTask.getGainedXP());
 		}
 	}
 
@@ -211,38 +184,117 @@ public class NexHelper implements Runnable {
 		lastLog = System.currentTimeMillis();
 	}
 
-	private String getRespond() {
-		if (NexusScript.currentTask != null) {
-			respond = "log:1:" + NexusScript.currentTask.getTaskID();
-		}
-		return "log:0";
+	private void requestTask(PrintWriter out, BufferedReader in) throws IOException {
+		out.println("task_request:1");
+		respond = in.readLine();
+		methodProvider.log("got respond from task_request:" + respond);
+		handleRespond(respond);
 	}
 
-	/*
-	 * reads the respond from server if respond is anything else than the 'standard'
-	 * - "logged:fine" put respond to messageQueue
-	 */
-	private void handleRespond(String respond2) {
-		if (!respond.equals("logged:fine")) {
-			messageQueue.push(respond);
+	public void getNewTask() {
+		newTask = TaskHandler.popTask();
+		if (newTask != null) {
+			NexusScript.currentTask = newTask;
+		} else if (!messageQueue.contains("NEW_TASK")) {
+			messageQueue.push("NEW_TASK");
 		}
 	}
 
-	/*
-	 * Initialize contact towards socket if connection fails, stop script
-	 */
-	private void initializeContactToSocket(PrintWriter out, BufferedReader in) throws IOException {
-		// methodProvider.log("bla");
-		out.println("script:1:" + getIP() + ":" + methodProvider.bot.getUsername());
-		if (in.readLine().equals("connected:1")) {
-			methodProvider.log("NexHelper has been initialized towards Nexus");
+	private void handleTaskRespond(String[] parsed) {
+		if (parsed[1].equals("0")) {
+			handleTaskRespond(parsed);
+			NexusScript.SHOULD_RUN = false;
 		} else {
-			methodProvider.log("Connection Towards Nexus failed");
-			messageQueue.push(disconnectMessage);
+			taskType = parsed[2];
+
+			switch (taskType) {
+			case "WOODCUTTING":
+				handleWoodCuttingRespond(parsed);
+				break;
+			case "BREAK":
+				handleBreakRespond(parsed);
+				break;
+
+			}
+		}
+
+	}
+
+	private void handleWoodCuttingRespond(String[] parsed) {
+		currentTaskID = parsed[3];
+		parsedBankArea = parsed[4];
+		parsedActionArea = parsed[5];
+		parsedAxeID = parsed[6];
+		axeName = parsed[7];
+		treeName = parsed[8];
+		parsedBreakCondition = parsed[9];
+		breakAfter = parsed[10];
+		breakCondition = getBreakCondition(parsedBreakCondition, breakAfter);
+		if (parsedBankArea.equals("none")) {
+			bankArea = null;
+		} else {
+			bankArea = WebBank.parseCoordinates(parsedBankArea);
+		}
+		axeID = Integer.parseInt(parsedAxeID);
+		actionArea = WebBank.parseCoordinates(parsedActionArea);
+		axe = new RSItem(axeName, axeID);
+		methodProvider.log("Axe:" + axe.getId() + ":" + axe.getName());
+		methodProvider.log("Break in: "
+				+ (((currentTime + (Integer.parseInt(breakAfter) * 1000 * 60) - currentTime)) / 60000 + "minutes"));
+		newTask = new WoodcuttingTask(actionArea, bankArea, breakCondition, axe, treeName);
+		newTask.setBreakType(parsedBreakCondition);
+		newTask.setBreakAfter(breakAfter);
+		newTask.setTimeStartedMilli(currentTime);
+		newTask.setTaskID(currentTaskID);
+		TaskHandler.addTask(newTask);
+
+	}
+
+	private void handleBreakRespond(String[] parsed) {
+		currentTaskID = parsed[3];
+		parsedBreakCondition = parsed[4];
+		breakAfter = parsed[5];
+		newTask = new Task();
+		newTask.setTaskType(TaskType.BREAK);
+		newTask.setBreakType(parsedBreakCondition);
+		newTask.setCondition(getBreakCondition(parsedBreakCondition, breakAfter));
+		newTask.setBreakAfter(breakAfter);
+		newTask.setTimeStartedMilli(currentTime);
+		newTask.setTaskID(currentTaskID);
+		TaskHandler.addTask(newTask);
+
+	}
+
+	private BooleanSupplier getBreakCondition(String parsedBreakCondition, String breakAfter) {
+		if (parsedBreakCondition.equals("LEVEL")) {
+			return breakCondition = () -> methodProvider.skills.getStatic(Skill.WOODCUTTING) > Integer
+					.parseInt(breakAfter);
+		} else if (parsedBreakCondition.equals("TIME")) {
+			currentTime = System.currentTimeMillis();
+			return breakCondition = () -> System.currentTimeMillis() > currentTime
+					+ Integer.parseInt(breakAfter) * 1000 * 60;
+		}
+		return null;
+	}
+
+	private void checkIfBanned(PrintWriter out, BufferedReader in) throws IOException {
+		if (isDisabledMessageVisible()) {
+			sendBannedMessage(out, in);
 		}
 	}
 
-	public String getIP() {
+	private void sendBannedMessage(PrintWriter out, BufferedReader in) throws IOException {
+		out.println("banned:1");
+		respond = in.readLine();
+		messageQueue.push(respond);
+
+	}
+
+	private boolean isDisabledMessageVisible() {
+		return methodProvider.getColorPicker().isColorAt(483, 192, new Color(255, 255, 0));
+	}
+
+	public static String getIP() {
 		URL url;
 		try {
 			url = new URL("http://checkip.amazonaws.com/");
@@ -254,12 +306,6 @@ public class NexHelper implements Runnable {
 		}
 		return "not_found";
 
-	}
-
-	public void createLog(Task currentTask) {
-		if (currentTask != null) {
-			messageQueue.push("TASK_LOG:" + currentTask.getTaskID() + ":" + currentTask.getGainedXP());
-		}
 	}
 
 }
