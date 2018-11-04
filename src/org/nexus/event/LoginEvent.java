@@ -150,7 +150,10 @@ public final class LoginEvent extends Event {
 	}
 
 	private RS2Widget getLobbyButton() {
+		if(getWidgets() != null) {
 		return getWidgets().getWidgetContainingText("CLICK HERE TO PLAY");
+		}
+		return null;
 	}
 
 

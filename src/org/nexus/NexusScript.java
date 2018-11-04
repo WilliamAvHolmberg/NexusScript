@@ -62,7 +62,13 @@ public class NexusScript extends Script {
 		// TODO load login from bot, password should be same for ALL
 		username = bot.getUsername();
 		password = getPassword();
-		log(password);
+		log("lets sleep for 15 seconds for everything to initialize proper");
+		try {
+			Script.sleep(15000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		logEvent = new LoginEvent(this,username, password, this);
 		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
 		// create new NexHelper
@@ -143,15 +149,19 @@ public class NexusScript extends Script {
 	}
 
 	private void handleStates() {
-		node = nodeHandler.getNode();
 		if (currentTask.getTaskType() == TaskType.BREAK && client.isLoggedIn()) {
 			logoutTab.logOut();
 		} else if (!client.isLoggedIn()) {
 			login();
-		} else if (node != null) {
+		} else {
+			node = nodeHandler.getNode();
+			if(node != null) {
 			currentNode = node;
 			log("lets execute");
 			node.execute(this);
+			}else {
+				log("no node found");
+			}
 		}
 	}
 

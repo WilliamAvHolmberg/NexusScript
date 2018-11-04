@@ -26,7 +26,7 @@ import org.osbot.rs07.script.MethodProvider;
 
 public class NexHelper implements Runnable {
 	private MethodProvider methodProvider;
-	private String ip = "oxnet.zapto.org";
+	private String ip = "oxnetserver.ddns.net";
 	private int port = 43594;
 	private long lastLog = 0;
 
