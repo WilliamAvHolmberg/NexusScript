@@ -53,6 +53,7 @@ public class NexHelper implements Runnable {
 	private String nextRequest;
 	private String[] parsed;
 	private String string;
+	private String[] parsedRespond;
 
 	public NexHelper(MethodProvider methodProvider) {
 		this.methodProvider = methodProvider;
@@ -119,11 +120,28 @@ public class NexHelper implements Runnable {
 			methodProvider.log("lets update task log");
 			log(nextRequest, out, in);
 			break;
+		case "MULE_WITHDRAW":
+			methodProvider.log("lets send mule request");
+			handleMuleRequest(nextRequest, out, in);
 		default:
 			log(out, in);
 			break;
 		}
 
+	}
+
+	private void handleMuleRequest(String nextRequest, PrintWriter out, BufferedReader in) throws IOException {
+		String itemID = nextRequest.split(":")[1];
+		String amount = nextRequest.split(":")[2];
+		out.println("mule_request:"+itemID + ":" + amount + ":" + methodProvider.myPlayer().getName() + ":" + methodProvider.worlds.getCurrentWorld());
+		respond = in.readLine();
+		parsedRespond = respond.split(":");
+		if(parsedRespond[0].equals("SUCCESSFUL")) {
+			methodProvider.log("good response");
+		}else {
+			methodProvider.log("no mule available");
+			disconnect();
+		}
 	}
 
 	/*
@@ -136,8 +154,12 @@ public class NexHelper implements Runnable {
 			methodProvider.log("NexHelper has been initialized towards Nexus");
 		} else {
 			methodProvider.log("Connection Towards Nexus failed");
-			messageQueue.push("DISCONNECT");
+			disconnect();
 		}
+	}
+	
+	private void disconnect() {
+		messageQueue.push("DISCONNECT");
 	}
 
 	private String getRespond() {
