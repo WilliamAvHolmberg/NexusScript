@@ -120,7 +120,9 @@ public class NexusScript extends Script {
 		// Shall exit script when SHOULD_RUN is false
 		checkIfWeShouldStop();
 
-		if (currentTask == null) { // !currentTask.isCompleted(this)) {
+		if (!client.isLoggedIn() && (currentTask == null || currentTask.getTaskType() != TaskType.BREAK)) {
+			login();
+		} else if (currentTask == null) { // !currentTask.isCompleted(this)) {
 			helper.getNewTask();
 			experienceTracker.start(Skill.WOODCUTTING);
 		} else if (currentTask.isCompleted()) {
@@ -151,9 +153,7 @@ public class NexusScript extends Script {
 	private void handleStates() {
 		if (currentTask.getTaskType() == TaskType.BREAK && client.isLoggedIn()) {
 			logoutTab.logOut();
-		} else if (!client.isLoggedIn()) {
-			login();
-		} else {
+		}else {
 			node = nodeHandler.getNode();
 			if(node != null) {
 			currentNode = node;

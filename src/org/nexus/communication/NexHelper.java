@@ -26,7 +26,8 @@ import org.osbot.rs07.script.MethodProvider;
 
 public class NexHelper implements Runnable {
 	private MethodProvider methodProvider;
-	private String ip = "oxnetserver.ddns.net";
+	//private String ip = "oxnetserver.ddns.net";
+	private String ip = "192.168.10.127";
 	private int port = 43594;
 	private long lastLog = 0;
 
@@ -185,7 +186,12 @@ public class NexHelper implements Runnable {
 	}
 
 	private void requestTask(PrintWriter out, BufferedReader in) throws IOException {
-		out.println("task_request:1");
+		String skills = "skills;";
+		for(Skill skill : Skill.values()) {
+			skills += skill + "," + methodProvider.skills.getStatic(skill) + ";";
+		}
+		methodProvider.log(skills);
+		out.println("task_request:1:" + skills);
 		respond = in.readLine();
 		methodProvider.log("got respond from task_request:" + respond);
 		handleRespond(respond);
