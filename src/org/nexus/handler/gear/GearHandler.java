@@ -19,9 +19,19 @@ public class GearHandler extends Handler {
 	private ArrayList<String> currentEquipedGear;
 
 	private Gear preferredGear;
-
+	
 	public GearHandler(MethodProvider methodProvider) {
 		this.methodProvider = methodProvider;
+	}
+	
+	/**
+	 * 
+	 * @param param1
+	 * @param param2
+	 * @return
+	 */
+	public int bla(int param1, int param2) {
+		return param1 + param2;
 	}
 
 	@Override

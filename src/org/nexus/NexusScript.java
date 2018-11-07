@@ -170,6 +170,7 @@ public class NexusScript extends Script {
 		execute(logEvent);
 	}
 
+	
 	@Override
 	public void onPaint(Graphics2D g) {
 		g.drawString("Current IP: " + getIP(), 50,200);
