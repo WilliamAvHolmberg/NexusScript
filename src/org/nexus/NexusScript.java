@@ -55,50 +55,20 @@ public class NexusScript extends Script {
 
 	@Override
 	public void onStart() {
-		
-		
-		
-		// override login
-		// TODO load login from bot, password should be same for ALL
 		username = bot.getUsername();
 		password = getPassword();
 		log("lets sleep for 15 seconds for everything to initialize proper");
-		try {
-			Script.sleep(15000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		sleep(15000);
+		
 		logEvent = new LoginEvent(this,username, password, this);
 		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
-		// create new NexHelper
+		
 		helper = new NexHelper(this);
-		// initialize a new thread for NexHelper
 		nexHelperThread = new Thread(helper);
 		nexHelperThread.start();
-
-		// init node Handler
+		BankHandler.addItem(new WithdrawItem(995,100000000, "Coins"));
+		
 		nodeHandler = new NodeHandler(this);
-
-		// BankHandler.addItem(new WithdrawItem(385, 77, "Shark"));
-		List<String> itemsToKeep = new ArrayList<String>();
-		itemsToKeep.add("Coins");
-		// BankHandler.addItem(new
-		// DepositItem(DepositItem.DepositType.DEPOSIT_ALL_EXCEPT, itemsToKeep));
-		// fill NodeHandler with nodes
-		// NodeHandler.add(new Node().init(this));
-
-		RSItem runeAxe = new RSItem("Rune axe", 1359);
-		RSItem dragonAxe = new RSItem("Dragon axe", 6739);
-		RSItem axe = runeAxe;
-		Gear gear = new Gear();
-		gear.addGear(EquipmentSlot.WEAPON, axe);
-		Area area = new Area(
-				new int[][] { { 3199, 3206 }, { 3187, 3206 }, { 3181, 3238 }, { 3197, 3253 }, { 3201, 3252 } });
-		// currentTask = new WoodcuttingTask(area, null, () ->
-		// skills.getStatic(Skill.WOODCUTTING) > 99, axe, "Tree");
-		// currentTask.setPreferredGear(gear);
-
 		experienceTracker.start(Skill.WOODCUTTING);
 	}
 
@@ -153,7 +123,7 @@ public class NexusScript extends Script {
 	private void handleStates() {
 		if (currentTask.getTaskType() == TaskType.BREAK && client.isLoggedIn()) {
 			logoutTab.logOut();
-		}else {
+		}else if(currentTask.getTaskType() != TaskType.BREAK) {
 			node = nodeHandler.getNode();
 			if(node != null) {
 			currentNode = node;
@@ -215,6 +185,15 @@ public class NexusScript extends Script {
 			return (String) SimpleCacheManager.getInstance().get("IP");
 		}else {
 			return (String) SimpleCacheManager.getInstance().put("IP", NexHelper.getIP());
+		}
+	}
+	
+	public void sleep(int milli) {
+		try {
+			methodProvider.sleep(milli);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

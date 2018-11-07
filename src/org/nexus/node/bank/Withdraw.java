@@ -1,6 +1,7 @@
 package org.nexus.node.bank;
 
 import org.nexus.NexusScript;
+import org.nexus.communication.NexHelper;
 import org.nexus.handler.BankHandler;
 import org.nexus.handler.GrandExchangeHandler;
 import org.nexus.node.Node;
@@ -33,11 +34,21 @@ public class Withdraw extends Node {
 
 		if(bankAmount < amountRequired) {
 			amountRequiredFromGE = amountRequired - bankAmount;
-			GrandExchangeHandler.addItem(new GEItem(item.getItemID(), amountRequiredFromGE, item.getItemName()));
-			methodProvider.log("Bank does not contain the required amount of our item. Buy:" + amountRequiredFromGE);
+			handleBankDoesNotContainItem(methodProvider, item, amountRequiredFromGE);
 		}else {
 			methodProvider.bank.withdraw(item.getItemID(), amountRequired);
 			Timing.waitCondition(() ->methodProvider.inventory.getAmount(item.getItemID()) - invAmountPreWithdraw == amountRequired, 3000); 
+		}
+		
+	}
+
+	private void handleBankDoesNotContainItem(MethodProvider methodProvider, WithdrawItem item, int amountRequiredFromGE) {
+		if(item.getItemID() == 995) {
+			NexHelper.messageQueue.push("MULE_WITHDRAW:995:" + amountRequiredFromGE);
+			
+		}else {
+			GrandExchangeHandler.addItem(new GEItem(item.getItemID(), amountRequiredFromGE, item.getItemName()));
+			methodProvider.log("Bank does not contain the required amount of our item. Buy:" + amountRequiredFromGE);
 		}
 		
 	}
