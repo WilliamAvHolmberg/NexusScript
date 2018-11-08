@@ -19,8 +19,7 @@ public class GrandExchangeHandler extends Handler {
 	public static HandleCoins handleCoins = new HandleCoins();
 	public static BuyItem buyItemNode = new BuyItem();
 
-	public GrandExchangeHandler(MethodProvider methodProvider) {
-		this.methodProvider = methodProvider;
+	public GrandExchangeHandler() {
 	}
 
 	public Node getNode() {
@@ -32,10 +31,10 @@ public class GrandExchangeHandler extends Handler {
 			if (purchaseIsCompleted(geItem, withdrawItem)) {
 				GrandExchangeHandler.removeItem(geItem);
 			} else if (purchaseAmountIsWrong(geItem, withdrawItem)) {
-				geItem.setAmount((int) (withdrawItem.getAmount() - methodProvider.bank.getAmount(geItem.getItemID())));
+				geItem.setAmount((int) (withdrawItem.getAmount() - bank.getAmount(geItem.getItemID())));
 			} else if (!playerAtGrandExchange()) {
 				return walkToAreaNode.setArea(WebBank.GRAND_EXCHANGE.getArea());
-			} else if (!methodProvider.inventory.onlyContains("Coins") || !methodProvider.inventory.contains("Coins")) {
+			} else if (!inventory.onlyContains("Coins") || !inventory.contains("Coins")) {
 				return handleCoins;
 			} else {
 				return buyItemNode.setItem(geItem);
@@ -45,13 +44,13 @@ public class GrandExchangeHandler extends Handler {
 	}
 
 	private boolean purchaseAmountIsWrong(GEItem geItem, WithdrawItem withdrawItem) {
-		return methodProvider.bank.isOpen()
-				&& (withdrawItem.getAmount() - methodProvider.bank.getAmount(geItem.getItemID())) != geItem.getAmount();
+		return bank.isOpen()
+				&& (withdrawItem.getAmount() - bank.getAmount(geItem.getItemID())) != geItem.getAmount();
 	}
 
 	private boolean purchaseIsCompleted(GEItem geItem, WithdrawItem withdrawItem) {
-		return methodProvider.bank.isOpen()
-				&& methodProvider.bank.getAmount(geItem.getItemID()) >= withdrawItem.getAmount();
+		return bank.isOpen()
+				&& bank.getAmount(geItem.getItemID()) >= withdrawItem.getAmount();
 	}
 
 	public static void addItem(GEItem item) {
@@ -70,7 +69,7 @@ public class GrandExchangeHandler extends Handler {
 	}
 
 	private boolean playerAtGrandExchange() {
-		return WebBank.GRAND_EXCHANGE.getArea().contains(methodProvider.myPosition());
+		return WebBank.GRAND_EXCHANGE.getArea().contains(myPosition());
 	}
 
 }

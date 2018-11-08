@@ -16,7 +16,6 @@ import org.osbot.rs07.script.MethodProvider;
 
 public class NodeHandler extends Handler {
 	private Node node;
-	protected MethodProvider methodProvider;
 	private WoodcuttingHandler woodcuttingHandler;
 	private BankHandler bankHandler;
 	private GrandExchangeHandler geHandler;
@@ -25,13 +24,11 @@ public class NodeHandler extends Handler {
 	private DepositItem depositItem;
 	private GearHandler gearHandler;
 
-	public NodeHandler(MethodProvider methodProvider) {
-		super.methodProvider = methodProvider;
-		this.methodProvider = methodProvider;
-		this.woodcuttingHandler = new WoodcuttingHandler(methodProvider);
-		this.bankHandler = new BankHandler(methodProvider);
-		this.geHandler = new GrandExchangeHandler(methodProvider);
-		this.gearHandler = new GearHandler(methodProvider);
+	public NodeHandler() {
+		this.woodcuttingHandler = new WoodcuttingHandler();
+		this.bankHandler = new BankHandler();
+		this.geHandler = new GrandExchangeHandler();
+		this.gearHandler = new GearHandler();
 	}
 
 	/**
@@ -59,5 +56,12 @@ public class NodeHandler extends Handler {
 			}
 			return node;
 		}
+	}
+
+	public void init() {
+		this.woodcuttingHandler.exchangeContext(getBot());
+		this.bankHandler.exchangeContext(getBot());
+		this.geHandler.exchangeContext(getBot());
+		this.gearHandler.exchangeContext(getBot());
 	}
 }

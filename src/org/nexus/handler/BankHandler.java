@@ -25,9 +25,6 @@ public class BankHandler extends Handler {
 
 	private String[] stockArr;
 
-	public BankHandler(MethodProvider methodProvider) {
-		this.methodProvider = methodProvider;
-	}
 
 	@Override
 	public Node getNode() {
@@ -40,7 +37,7 @@ public class BankHandler extends Handler {
 	}
 
 	private Node getWithdrawNode(WithdrawItem withdrawItem) {
-		if (methodProvider.inventory.getAmount(withdrawItem.getItemID()) == withdrawItem.getAmount()) {
+		if (inventory.getAmount(withdrawItem.getItemID()) == withdrawItem.getAmount()) {
 			BankHandler.removeItem(withdrawItem);
 			return null;
 		} else if (!playerInBank()) {
@@ -53,7 +50,7 @@ public class BankHandler extends Handler {
 	}
 
 	private boolean bankIsOpen() {
-		return methodProvider.bank.isOpen();
+		return bank.isOpen();
 	}
 
 	public static boolean bankIsOpen(MethodProvider methodProvider) {
@@ -69,10 +66,10 @@ public class BankHandler extends Handler {
 		} else if (!playerInBank()) {
 			return walkToAreaNode.setArea(getBankArea());
 		} else if (!bankIsOpen()) {
-			methodProvider.log("in bank");
+			log("in bank");
 			return openBankNode;
 		} else {
-			methodProvider.log("lets deposit");
+			log("lets deposit");
 			return depositNode.setItem(depositItem);
 		}
 	}
@@ -80,13 +77,13 @@ public class BankHandler extends Handler {
 	private void checkIfDepositIsCompleted(DepositItem depositItem) {
 		switch (depositItem.getType()) {
 		case DEPOSIT_ALL:
-			if (methodProvider.inventory.isEmpty()) {
+			if (inventory.isEmpty()) {
 				BankHandler.removeItem(depositItem);
 			}
 			break;
 		case DEPOSIT_ALL_EXCEPT:
 			stockArr = new String[depositItem.getItems().size()];
-			if (methodProvider.inventory.isEmptyExcept(depositItem.getItems().toArray((stockArr))) ) {
+			if (inventory.isEmptyExcept(depositItem.getItems().toArray((stockArr))) ) {
 				BankHandler.removeItem(depositItem);
 			}
 			break;

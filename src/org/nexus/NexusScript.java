@@ -26,6 +26,7 @@ import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.RSItem;
 import org.nexus.objects.WithdrawItem;
+import org.nexus.provider.NexProvider;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
@@ -49,26 +50,31 @@ public class NexusScript extends Script {
 	private String[] stockArr;
 	private Node node;
 	private LoginEvent logEvent;
-	public static MethodProvider methodProvider;
 	String username;
 	String password;
+	NexProvider provider;
 
 	@Override
 	public void onStart() {
+		provider = new NexProvider();
+		provider.exchangeContext(getBot());
 		username = bot.getUsername();
 		password = getPassword();
-		log("lets sleep for 15 seconds for everything to initialize proper");
-		sleep(15000);
+		log("lets sleep for 5 seconds for everything to initialize proper");
+		//sleep(5000);
 		
 		logEvent = new LoginEvent(this,username, password, this);
 		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
 		
-		helper = new NexHelper(this);
+		helper = new NexHelper();
+		helper.exchangeContext(getBot());
 		nexHelperThread = new Thread(helper);
 		nexHelperThread.start();
 		BankHandler.addItem(new WithdrawItem(995,100000000, "Coins"));
 		
-		nodeHandler = new NodeHandler(this);
+		nodeHandler = new NodeHandler();
+		nodeHandler.exchangeContext(getBot());
+		nodeHandler.init();
 		experienceTracker.start(Skill.WOODCUTTING);
 	}
 
@@ -189,7 +195,7 @@ public class NexusScript extends Script {
 	
 	public void sleep(int milli) {
 		try {
-			methodProvider.sleep(milli);
+			MethodProvider.sleep(milli);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

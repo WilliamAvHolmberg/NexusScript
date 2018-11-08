@@ -20,9 +20,6 @@ public class GearHandler extends Handler {
 
 	private Gear preferredGear;
 
-	public GearHandler(MethodProvider methodProvider) {
-		this.methodProvider = methodProvider;
-	}
 
 	@Override
 	public Node getNode() {
@@ -36,9 +33,9 @@ public class GearHandler extends Handler {
 				for (HashMap.Entry<EquipmentSlot, GearItem> entry : preferredGear.getGear().entrySet()) {
 					EquipmentSlot slot = entry.getKey();
 					GearItem item = entry.getValue();
-					if (item != null && !methodProvider.equipment.isWearingItem(slot, item.getItem().getName())) {
+					if (item != null && !equipment.isWearingItem(slot, item.getItem().getName())) {
 						itemsToEquip.push(item);
-						methodProvider.log("should see this once");
+						log("should see this once");
 						return null;
 					}
 				}
@@ -55,7 +52,7 @@ public class GearHandler extends Handler {
 	}
 
 	private boolean isWearing(GearItem peek) {
-		return methodProvider.equipment.isWearingItem(peek.getSlot(), peek.getItem().getId());
+		return equipment.isWearingItem(peek.getSlot(), peek.getItem().getId());
 	}
 
 	/*
@@ -68,7 +65,7 @@ public class GearHandler extends Handler {
 	 * public static ArrayList<String> getCurrentEquipedGear(MethodProvider
 	 * methodProvider){ ArrayList<String> currentEquipedGear = new
 	 * ArrayList<String>(); for(EquipmentSlot slot: EquipmentSlot.values()) {
-	 * if(methodProvider.equipment) }
+	 * if(equipment) }
 	 * 
 	 * return null;
 	 * 

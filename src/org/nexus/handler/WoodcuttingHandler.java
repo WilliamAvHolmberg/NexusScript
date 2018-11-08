@@ -22,10 +22,8 @@ public class WoodcuttingHandler extends Handler {
 	public static Cut cutTreeNode = new Cut();;
 	List<String> itemsToWithdraw = new ArrayList<String>();
 	List<String> itemsToKeep = new ArrayList<String>();
-	private MethodProvider methodProvider;
 
-	public WoodcuttingHandler(MethodProvider methodProvider) {
-		this.methodProvider = methodProvider;
+	public WoodcuttingHandler() {
 		cutTreeNode = new Cut();
 	}
 
@@ -33,22 +31,22 @@ public class WoodcuttingHandler extends Handler {
 		WoodcuttingTask wcTask = (WoodcuttingTask) getCurrentTask();
 		int axeID = wcTask.getAxeID();
 		String axeName = wcTask.getAxeName();
-		if (!methodProvider.inventory.contains(axeID) && !methodProvider.equipment.isWieldingWeapon(axeID)) {
-			methodProvider.log("should not run");
+		if (!inventory.contains(axeID) && !equipment.isWieldingWeapon(axeID)) {
+			log("should not run");
 			BankHandler.addItem(new WithdrawItem(axeID, 1, axeName));
 			return null;
-		} else if (canWieldAxe(axeName) && !methodProvider.equipment.isWieldingWeapon(axeID)) {
+		} else if (canWieldAxe(axeName) && !equipment.isWieldingWeapon(axeID)) {
 			GearHandler.addItem(new GearItem(EquipmentSlot.WEAPON, wcTask.getAxe()));
 			return null;
-		} else if (methodProvider.inventory.isFull() || playerInBank() && shouldDepositUnnecessaryItems(wcTask)) { //TODO, maybe add method, getInventory at bank
+		} else if (inventory.isFull() || playerInBank() && shouldDepositUnnecessaryItems(wcTask)) { //TODO, maybe add method, getInventory at bank
 			itemsToKeep = new ArrayList<String>();
-			if(!methodProvider.equipment.isWieldingWeapon(axeName)) {
+			if(!equipment.isWieldingWeapon(axeName)) {
 				itemsToKeep.add(axeName);
 			}
 			BankHandler.addItem(new DepositItem(DepositItem.DepositType.DEPOSIT_ALL_EXCEPT, itemsToKeep));
 		} else if(!playerInActionArea()){
 			return walkToAreaNode.setArea(wcTask.getActionArea());
-		}else if(!methodProvider.myPlayer().isAnimating()) {
+		}else if(!myPlayer().isAnimating()) {
 			return cutTreeNode.setTreeName(wcTask.getTreeName());
 		} //else return idle, prepare for next tree
 		return null;
@@ -59,7 +57,7 @@ public class WoodcuttingHandler extends Handler {
 		if (canWieldAxe(wcTask.getAxeName())) {
 			emptySpots = 28;
 		}
-		return methodProvider.inventory.getEmptySlots() != emptySpots;
+		return inventory.getEmptySlots() != emptySpots;
 	}
 
 	private boolean canWieldAxe(String axe) {
@@ -68,15 +66,15 @@ public class WoodcuttingHandler extends Handler {
 		case "Iron axe":
 			return true;
 		case "Mithril axe":
-			if (methodProvider.getSkills().getStatic(Skill.ATTACK) >= 20) {
+			if (getSkills().getStatic(Skill.ATTACK) >= 20) {
 				return true;
 			}
 		case "Rune axe":
-			if (methodProvider.getSkills().getStatic(Skill.ATTACK) >= 40) {
+			if (getSkills().getStatic(Skill.ATTACK) >= 40) {
 				return true;
 			}
 		case "Dragon axe":
-			if (methodProvider.getSkills().getStatic(Skill.ATTACK) >= 60) {
+			if (getSkills().getStatic(Skill.ATTACK) >= 60) {
 				return true;
 			}
 		}

@@ -15,6 +15,7 @@ import java.util.function.BooleanSupplier;
 import org.nexus.NexusScript;
 import org.nexus.handler.TaskHandler;
 import org.nexus.objects.RSItem;
+import org.nexus.provider.NexProvider;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
@@ -24,10 +25,9 @@ import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
-public class NexHelper implements Runnable {
-	private MethodProvider methodProvider;
+public class NexHelper extends NexProvider implements Runnable {
 	//private String ip = "oxnetserver.ddns.net";
-	private String ip = "192.168.10.127";
+	private String ip = "nexus.no-ip.org";
 	private int port = 43594;
 	private long lastLog = 0;
 
@@ -55,39 +55,40 @@ public class NexHelper implements Runnable {
 	private String string;
 	private String[] parsedRespond;
 
-	public NexHelper(MethodProvider methodProvider) {
-		this.methodProvider = methodProvider;
+	public NexHelper() {
 		messageQueue = new Stack<String>();
-		methodProvider.log("initiated NexHelper");
 	}
 
 	@Override
 	public void run() {
-		methodProvider.log("started NexHelper");
+		log("started NexHelper");
 		try {
 			Socket socket = new Socket(ip, port);
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-			methodProvider.log("lets init");
+			log("lets init");
 			initializeContactToSocket(out, in);
 
 			whileShouldRun(out, in); // main loop, always run while script should be running
 
 		} catch (Exception e) {
-			methodProvider.log(e.getLocalizedMessage());
+			log("Fail");
+			log(e);
+			disconnect();
 		}
 
 	}
 
 	private void whileShouldRun(PrintWriter out, BufferedReader in) throws IOException, InterruptedException {
+		log("alive");
 		while (NexusScript.SHOULD_RUN) {
 			checkIfBanned(out, in);
 			if (!messageQueue.isEmpty()) {
 				handleMessageQueue(out, in);
 			} else {
-				// methodProvider.log("lets log");
-				log(out, in);
+				// log("lets log");
+				logToServer(out, in);
 				Thread.sleep(1000);
 			}
 		}
@@ -96,35 +97,35 @@ public class NexHelper implements Runnable {
 
 	private void handleMessageQueue(PrintWriter out, BufferedReader in) throws InterruptedException, IOException {
 		nextRequest = messageQueue.pop();
-		methodProvider.log(nextRequest);
+		log(nextRequest);
 		parsed = nextRequest.split(":");
 		string = parsed[0];
 
 		switch (string) {
 		case "DISCONNECT":
 			NexusScript.SHOULD_RUN = false;
-			log(out, in);
+			logToServer(out, in);
 			break;
 		case "BANNED":
 			sendBannedMessage(out, in);
 			break;
 		case "NEW_TASK":
-			methodProvider.log("lets request new task");
+			log("lets request new task");
 			requestTask(out, in);
 			break;
 		case "task_respond":
 			handleTaskRespond(parsed);
-			log(out, in);
+			logToServer(out, in);
 			break;
 		case "TASK_LOG":
-			methodProvider.log("lets update task log");
-			log(nextRequest, out, in);
+			log("lets update task log");
+			logToServer(nextRequest, out, in);
 			break;
 		case "MULE_WITHDRAW":
-			methodProvider.log("lets send mule request");
+			log("lets send mule request");
 			handleMuleRequest(nextRequest, out, in);
 		default:
-			log(out, in);
+			logToServer(out, in);
 			break;
 		}
 
@@ -133,13 +134,13 @@ public class NexHelper implements Runnable {
 	private void handleMuleRequest(String nextRequest, PrintWriter out, BufferedReader in) throws IOException {
 		String itemID = nextRequest.split(":")[1];
 		String amount = nextRequest.split(":")[2];
-		out.println("mule_request:"+itemID + ":" + amount + ":" + methodProvider.myPlayer().getName() + ":" + methodProvider.worlds.getCurrentWorld());
+		out.println("mule_request:"+itemID + ":" + amount + ":" + myPlayer().getName() + ":" + worlds.getCurrentWorld());
 		respond = in.readLine();
 		parsedRespond = respond.split(":");
 		if(parsedRespond[0].equals("SUCCESSFUL")) {
-			methodProvider.log("good response");
+			log("good response");
 		}else {
-			methodProvider.log("no mule available");
+			log("no mule available");
 			disconnect();
 		}
 	}
@@ -148,12 +149,13 @@ public class NexHelper implements Runnable {
 	 * Initialize contact towards socket if connection fails, stop script
 	 */
 	private void initializeContactToSocket(PrintWriter out, BufferedReader in) throws IOException {
-		// methodProvider.log("bla");
-		out.println("script:1:" + getIP() + ":" + methodProvider.bot.getUsername());
-		if (in.readLine().equals("connected:1")) {
-			methodProvider.log("NexHelper has been initialized towards Nexus");
+		log("bla");
+		out.println("script:1:" + getIP() + ":" + getBot().getUsername());
+		respond = in.readLine();
+		if (respond.equals("connected:1")) {
+			log("NexHelper has been initialized towards Nexus");
 		} else {
-			methodProvider.log("Connection Towards Nexus failed");
+			log("Connection Towards Nexus failed");
 			disconnect();
 		}
 	}
@@ -188,7 +190,7 @@ public class NexHelper implements Runnable {
 	/*
 	 * Method to take care of every log
 	 */
-	private void log(PrintWriter out, BufferedReader in) throws InterruptedException, IOException {
+	private void logToServer(PrintWriter out, BufferedReader in) throws InterruptedException, IOException {
 		if (System.currentTimeMillis() - lastLog > 5000) { // only log every 5 sec
 			respond = getRespond();
 			out.println(respond);
@@ -199,7 +201,7 @@ public class NexHelper implements Runnable {
 
 	}
 
-	private void log(String message, PrintWriter out, BufferedReader in) throws IOException {
+	private void logToServer(String message, PrintWriter out, BufferedReader in) throws IOException {
 		respond = message;
 		out.println(respond);
 		respond = in.readLine();
@@ -208,18 +210,19 @@ public class NexHelper implements Runnable {
 	}
 
 	private void requestTask(PrintWriter out, BufferedReader in) throws IOException {
-		String skills = "skills;";
+		String string = "skills;";
 		for(Skill skill : Skill.values()) {
-			skills += skill + "," + methodProvider.skills.getStatic(skill) + ";";
+			string += skill + "," + skills.getStatic(skill) + ";";
 		}
-		methodProvider.log(skills);
-		out.println("task_request:1:" + skills);
+		log(string);
+		out.println("task_request:1:" + string);
 		respond = in.readLine();
-		methodProvider.log("got respond from task_request:" + respond);
+		log("got respond from task_request:" + respond);
 		handleRespond(respond);
 	}
 
 	public void getNewTask() {
+		log("lets get new task");
 		newTask = TaskHandler.popTask();
 		if (newTask != null) {
 			NexusScript.currentTask = newTask;
@@ -266,8 +269,8 @@ public class NexHelper implements Runnable {
 		axeID = Integer.parseInt(parsedAxeID);
 		actionArea = WebBank.parseCoordinates(parsedActionArea);
 		axe = new RSItem(axeName, axeID);
-		methodProvider.log("Axe:" + axe.getId() + ":" + axe.getName());
-		methodProvider.log("Break in: "
+		log("Axe:" + axe.getId() + ":" + axe.getName());
+		log("Break in: "
 				+ (((currentTime + (Integer.parseInt(breakAfter) * 1000 * 60) - currentTime)) / 60000 + "minutes"));
 		newTask = new WoodcuttingTask(actionArea, bankArea, breakCondition, axe, treeName);
 		newTask.setBreakType(parsedBreakCondition);
@@ -295,7 +298,7 @@ public class NexHelper implements Runnable {
 
 	private BooleanSupplier getBreakCondition(String parsedBreakCondition, String breakAfter) {
 		if (parsedBreakCondition.equals("LEVEL")) {
-			return breakCondition = () -> methodProvider.skills.getStatic(Skill.WOODCUTTING) > Integer
+			return breakCondition = () -> skills.getStatic(Skill.WOODCUTTING) > Integer
 					.parseInt(breakAfter);
 		} else if (parsedBreakCondition.equals("TIME")) {
 			currentTime = System.currentTimeMillis();
@@ -306,7 +309,7 @@ public class NexHelper implements Runnable {
 	}
 
 	private void checkIfBanned(PrintWriter out, BufferedReader in) throws IOException {
-		if (isDisabledMessageVisible()) {
+		if (getPlayer().isDisabledMessageVisible()) {
 			sendBannedMessage(out, in);
 		}
 	}
@@ -315,12 +318,9 @@ public class NexHelper implements Runnable {
 		out.println("banned:1");
 		respond = in.readLine();
 		messageQueue.push(respond);
-
 	}
 
-	private boolean isDisabledMessageVisible() {
-		return methodProvider.getColorPicker().isColorAt(483, 192, new Color(255, 255, 0));
-	}
+	
 
 	public static String getIP() {
 		URL url;
