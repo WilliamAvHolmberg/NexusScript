@@ -20,6 +20,7 @@ public class Task {
 	private String taskID;
 	private long timeStartedMilli;
 	private int gainedXP = 0;
+	public boolean tradeIsCompleted = false;
 	
 	public static Gear EMPTY_GEAR = new Gear();
 	

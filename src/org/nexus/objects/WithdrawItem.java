@@ -7,4 +7,12 @@ public class WithdrawItem extends RequiredItem{
 		setAmount(itemAmount);
 		setItemName(itemName);
 	}
+	
+	public WithdrawItem(int itemID, int itemAmount) {
+		setItemID(itemID);
+		setAmount(itemAmount);
+		if(itemID == 995) {
+			setItemName("Coins");
+		}
+	}
 }

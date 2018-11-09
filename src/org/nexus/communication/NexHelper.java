@@ -19,6 +19,9 @@ import org.nexus.provider.NexProvider;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
+import org.nexus.task.mule.DepositToSlave;
+import org.nexus.task.mule.WithdrawFromMule;
+import org.nexus.utils.Timing;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
@@ -26,8 +29,8 @@ import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
 public class NexHelper extends NexProvider implements Runnable {
-	//private String ip = "oxnetserver.ddns.net";
-	private String ip = "nexus.no-ip.org";
+	//private String ip = "nexus.no-ip.org";
+	private String ip = "oxnetserver.ddns.net";
 	private int port = 43594;
 	private long lastLog = 0;
 
@@ -54,6 +57,12 @@ public class NexHelper extends NexProvider implements Runnable {
 	private String[] parsed;
 	private String string;
 	private String[] parsedRespond;
+	private String world;
+	private String muleName;
+	private long startAmount;
+	private String tradeName;
+	private String itemID;
+	private String itemAmount;
 
 	public NexHelper() {
 		messageQueue = new Stack<String>();
@@ -114,6 +123,7 @@ public class NexHelper extends NexProvider implements Runnable {
 			requestTask(out, in);
 			break;
 		case "task_respond":
+			log(nextRequest);
 			handleTaskRespond(parsed);
 			logToServer(out, in);
 			break;
@@ -136,13 +146,30 @@ public class NexHelper extends NexProvider implements Runnable {
 		String amount = nextRequest.split(":")[2];
 		out.println("mule_request:"+itemID + ":" + amount + ":" + myPlayer().getName() + ":" + worlds.getCurrentWorld());
 		respond = in.readLine();
+		log("mule respond: " + respond);
 		parsedRespond = respond.split(":");
 		if(parsedRespond[0].equals("SUCCESSFUL")) {
-			log("good response");
+			handleSuccessfullMuleRespond(parsedRespond, Integer.parseInt(itemID), Integer.parseInt(amount));
 		}else {
 			log("no mule available");
 			disconnect();
 		}
+	}
+
+
+
+	private void handleSuccessfullMuleRespond(String[] parsedRespond, int itemID, int amount) {
+		
+		muleName = parsedRespond[1];
+		world = parsedRespond[2]; 
+		startAmount = inventory.getAmount(itemID);
+		newTask = new WithdrawFromMule(Integer.parseInt(world), itemID, amount, (int) startAmount, muleName.toLowerCase());
+		newTask.setCondition(() -> inventory.getAmount(itemID) >= amount + startAmount);
+		if(NexusScript.currentTask != null) {
+			TaskHandler.addTask(NexusScript.currentTask);
+		}
+		NexusScript.currentTask = newTask;
+		
 	}
 
 	/*
@@ -237,10 +264,12 @@ public class NexHelper extends NexProvider implements Runnable {
 			NexusScript.SHOULD_RUN = false;
 		} else {
 			taskType = parsed[2];
-
 			switch (taskType) {
 			case "WOODCUTTING":
 				handleWoodCuttingRespond(parsed);
+				break;
+			case "MULE_WITHDRAW":
+				handleMuleRespond(parsed);
 				break;
 			case "BREAK":
 				handleBreakRespond(parsed);
@@ -249,6 +278,19 @@ public class NexHelper extends NexProvider implements Runnable {
 			}
 		}
 
+	}
+
+	private void handleMuleRespond(String[] parsed) {
+		tradeName = parsed[3];
+		int world = Integer.parseInt(parsed[4]);
+		int itemID = Integer.parseInt(parsed[5]);
+		int itemAmount = Integer.parseInt(parsed[6]);
+		int startAmount = (int) inventory.getAmount(itemID);
+		newTask = new DepositToSlave(world, itemID, itemAmount, startAmount, tradeName);
+		newTask.setTimeStartedMilli(currentTime);
+		newTask.setCondition(()-> newTask.tradeIsCompleted);
+		TaskHandler.addTask(newTask);
+		
 	}
 
 	private void handleWoodCuttingRespond(String[] parsed) {

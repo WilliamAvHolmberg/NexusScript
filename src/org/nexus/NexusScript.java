@@ -30,6 +30,7 @@ import org.nexus.provider.NexProvider;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
+import org.nexus.utils.Timing;
 import org.nexus.utils.grandexchange.RSExchange;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.EquipmentSlot;
@@ -61,17 +62,19 @@ public class NexusScript extends Script {
 		username = bot.getUsername();
 		password = getPassword();
 		log("lets sleep for 5 seconds for everything to initialize proper");
-		//sleep(5000);
-		
-		logEvent = new LoginEvent(this,username, password, this);
+		sleep(5000);
+
+		logEvent = new LoginEvent(this, username, password, this);
 		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
-		
+
 		helper = new NexHelper();
 		helper.exchangeContext(getBot());
 		nexHelperThread = new Thread(helper);
 		nexHelperThread.start();
-		BankHandler.addItem(new WithdrawItem(995,100000000, "Coins"));
-		
+		if (username.equals("adrohdell@gmail.com")) {
+			BankHandler.addItem(new WithdrawItem(995, 10000, "Coins"));
+		}
+
 		nodeHandler = new NodeHandler();
 		nodeHandler.exchangeContext(getBot());
 		nodeHandler.init();
@@ -79,7 +82,7 @@ public class NexusScript extends Script {
 	}
 
 	private String getPassword() {
-		if(getParameters() != null) {
+		if (getParameters() != null) {
 			String[] params = getParameters().split("_");
 			log(params);
 			log(getParameters());
@@ -100,6 +103,8 @@ public class NexusScript extends Script {
 			login();
 		} else if (currentTask == null) { // !currentTask.isCompleted(this)) {
 			helper.getNewTask();
+			log("Lets sleep until we found task");
+			Timing.waitCondition(() -> !TaskHandler.available_tasks.isEmpty() || currentTask != null, 15000);
 			experienceTracker.start(Skill.WOODCUTTING);
 		} else if (currentTask.isCompleted()) {
 			handleCompletedTask();
@@ -129,27 +134,26 @@ public class NexusScript extends Script {
 	private void handleStates() {
 		if (currentTask.getTaskType() == TaskType.BREAK && client.isLoggedIn()) {
 			logoutTab.logOut();
-		}else if(currentTask.getTaskType() != TaskType.BREAK) {
+		} else if (currentTask.getTaskType() != TaskType.BREAK) {
 			node = nodeHandler.getNode();
-			if(node != null) {
-			currentNode = node;
-			log("lets execute");
-			node.execute(this);
-			}else {
+			if (node != null) {
+				currentNode = node;
+				log("lets execute");
+				node.execute(this);
+			} else {
 				log("no node found");
 			}
 		}
 	}
 
 	private void login() {
-		logEvent = new LoginEvent(this,username, password, this);
+		logEvent = new LoginEvent(this, username, password, this);
 		execute(logEvent);
 	}
 
-	
 	@Override
 	public void onPaint(Graphics2D g) {
-		g.drawString("Current IP: " + getIP(), 50,200);
+		g.drawString("Current IP: " + getIP(), 50, 200);
 		if (currentNode != null) {
 			g.drawString("Current Node:" + currentNode, 50, 50);
 		}
@@ -187,13 +191,13 @@ public class NexusScript extends Script {
 	}
 
 	private String getIP() {
-		if(SimpleCacheManager.getInstance().get("IP") != null) {
+		if (SimpleCacheManager.getInstance().get("IP") != null) {
 			return (String) SimpleCacheManager.getInstance().get("IP");
-		}else {
+		} else {
 			return (String) SimpleCacheManager.getInstance().put("IP", NexHelper.getIP());
 		}
 	}
-	
+
 	public void sleep(int milli) {
 		try {
 			MethodProvider.sleep(milli);

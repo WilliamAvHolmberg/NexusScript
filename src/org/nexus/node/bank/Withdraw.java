@@ -7,6 +7,7 @@ import org.nexus.handler.GrandExchangeHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.WithdrawItem;
+import org.nexus.task.TaskType;
 import org.nexus.utils.Timing;
 import org.osbot.rs07.script.MethodProvider;
 
@@ -45,7 +46,8 @@ public class Withdraw extends Node {
 	private void handleBankDoesNotContainItem(MethodProvider methodProvider, WithdrawItem item, int amountRequiredFromGE) {
 		if(item.getItemID() == 995) {
 			NexHelper.messageQueue.push("MULE_WITHDRAW:995:" + amountRequiredFromGE);
-			
+			methodProvider.log("sleep until we got new task");
+			Timing.waitCondition(() -> NexusScript.currentTask.getTaskType() == TaskType.WITHDRAW_FROM_MULE, 15000);
 		}else {
 			GrandExchangeHandler.addItem(new GEItem(item.getItemID(), amountRequiredFromGE, item.getItemName()));
 			methodProvider.log("Bank does not contain the required amount of our item. Buy:" + amountRequiredFromGE);

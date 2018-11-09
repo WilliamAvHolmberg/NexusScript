@@ -19,13 +19,8 @@ public class GearHandler extends Handler {
 	private ArrayList<String> currentEquipedGear;
 
 	private Gear preferredGear;
-<<<<<<< HEAD
 
-=======
-	
-	public GearHandler(MethodProvider methodProvider) {
-		this.methodProvider = methodProvider;
-	}
+
 	
 	/**
 	 * 
@@ -36,7 +31,7 @@ public class GearHandler extends Handler {
 	public int bla(int param1, int param2) {
 		return param1 + param2;
 	}
->>>>>>> 9ea2b07b8c278cc777770ec9b18e2a1c3ab8f8df
+
 
 	@Override
 	public Node getNode() {
