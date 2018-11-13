@@ -13,6 +13,14 @@ import java.util.Stack;
 import java.util.function.BooleanSupplier;
 
 import org.nexus.NexusScript;
+import org.nexus.communication.message.BannedMessage;
+import org.nexus.communication.message.DisconnectMessage;
+import org.nexus.communication.message.NexMessage;
+import org.nexus.communication.message.TaskLog;
+import org.nexus.communication.message.request.RequestTask;
+import org.nexus.communication.message.respond.BreakRespond;
+import org.nexus.communication.message.respond.MuleRespond;
+import org.nexus.communication.message.respond.WoodcuttingRespond;
 import org.nexus.handler.TaskHandler;
 import org.nexus.objects.RSItem;
 import org.nexus.provider.NexProvider;
@@ -29,43 +37,30 @@ import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
 public class NexHelper extends NexProvider implements Runnable {
-	//private String ip = "nexus.no-ip.org";
+<<<<<<< HEAD
+	//private String ip = "0.0.0.0";
 	private String ip = "oxnetserver.ddns.net";
+=======
+	 private String ip = "0.0.0.0";
+	//private String ip = "oxnetserver.ddns.net";
+>>>>>>> 96d3f9eb397603a4c78d2494506bf87042125990
 	private int port = 43594;
 	private long lastLog = 0;
 
-	public static Stack<String> messageQueue;
+	public static Stack<NexMessage> messageQueue;
 	private String respond = "none";
 
-	private String parsedBankArea;
-	private String parsedActionArea;
-	private String parsedAxeID;
-	private String axeName;
-	private String treeName;
-	private String parsedBreakCondition;
-	private String breakAfter;
-	private String taskType;
-	private Area bankArea;
-	private Area actionArea;
-	private RSItem axe;
-	private BooleanSupplier breakCondition;
-	private long currentTime;
-	private String currentTaskID;
-	private int axeID;
 	private Task newTask;
-	private String nextRequest;
+	private NexMessage nextRequest;
 	private String[] parsed;
 	private String string;
 	private String[] parsedRespond;
 	private String world;
 	private String muleName;
 	private long startAmount;
-	private String tradeName;
-	private String itemID;
-	private String itemAmount;
 
 	public NexHelper() {
-		messageQueue = new Stack<String>();
+		messageQueue = new Stack<NexMessage>();
 	}
 
 	@Override
@@ -84,7 +79,7 @@ public class NexHelper extends NexProvider implements Runnable {
 		} catch (Exception e) {
 			log("Fail");
 			log(e);
-			disconnect();
+			messageQueue.add(new DisconnectMessage(this, messageQueue, "Failed to initialize"));
 		}
 
 	}
@@ -94,6 +89,7 @@ public class NexHelper extends NexProvider implements Runnable {
 		while (NexusScript.SHOULD_RUN) {
 			checkIfBanned(out, in);
 			if (!messageQueue.isEmpty()) {
+				log("message queue not empty");
 				handleMessageQueue(out, in);
 			} else {
 				// log("lets log");
@@ -106,71 +102,35 @@ public class NexHelper extends NexProvider implements Runnable {
 
 	private void handleMessageQueue(PrintWriter out, BufferedReader in) throws InterruptedException, IOException {
 		nextRequest = messageQueue.pop();
-		log(nextRequest);
-		parsed = nextRequest.split(":");
-		string = parsed[0];
-
-		switch (string) {
-		case "DISCONNECT":
-			NexusScript.SHOULD_RUN = false;
-			logToServer(out, in);
-			break;
-		case "BANNED":
-			sendBannedMessage(out, in);
-			break;
-		case "NEW_TASK":
-			log("lets request new task");
-			requestTask(out, in);
-			break;
-		case "task_respond":
+		if (nextRequest != null) {
 			log(nextRequest);
-			handleTaskRespond(parsed);
+			nextRequest.execute(out, in);
+		} else {
 			logToServer(out, in);
-			break;
-		case "TASK_LOG":
-			log("lets update task log");
-			logToServer(nextRequest, out, in);
-			break;
-		case "MULE_WITHDRAW":
-			log("lets send mule request");
-			handleMuleRequest(nextRequest, out, in);
-		default:
-			logToServer(out, in);
-			break;
 		}
 
 	}
 
-	private void handleMuleRequest(String nextRequest, PrintWriter out, BufferedReader in) throws IOException {
-		String itemID = nextRequest.split(":")[1];
-		String amount = nextRequest.split(":")[2];
-		out.println("mule_request:"+itemID + ":" + amount + ":" + myPlayer().getName() + ":" + worlds.getCurrentWorld());
-		respond = in.readLine();
-		log("mule respond: " + respond);
-		parsedRespond = respond.split(":");
-		if(parsedRespond[0].equals("SUCCESSFUL")) {
-			handleSuccessfullMuleRespond(parsedRespond, Integer.parseInt(itemID), Integer.parseInt(amount));
-		}else {
-			log("no mule available");
-			disconnect();
+	/*
+	 * reads the respond from server if respond is anything else than the 'standard'
+	 * - "logged:fine" put respond to messageQueue
+	 */
+	private void handleRespond(String respond) {
+		if (!respond.equals("logged:fine")) {
+			parsedRespond = respond.split(":");
+			switch (parsedRespond[0]) {
+			case "SUCCESSFUL_MULE_REQUEST":
+				messageQueue.push(new MuleRespond(this, messageQueue, respond));
+				break;
+			case "UNSUCCESSFULL_MULE_REQUEST":
+				messageQueue.push(new DisconnectMessage(this, messageQueue, "Failed to get mule"));
+			default:
+				log("no respond found for message:" + respond);
+				break;
+			}
 		}
 	}
 
-
-
-	private void handleSuccessfullMuleRespond(String[] parsedRespond, int itemID, int amount) {
-		
-		muleName = parsedRespond[1];
-		world = parsedRespond[2]; 
-		startAmount = inventory.getAmount(itemID);
-		newTask = new WithdrawFromMule(Integer.parseInt(world), itemID, amount, (int) startAmount, muleName.toLowerCase());
-		newTask.setCondition(() -> inventory.getAmount(itemID) >= amount + startAmount);
-		if(NexusScript.currentTask != null) {
-			TaskHandler.addTask(NexusScript.currentTask);
-		}
-		NexusScript.currentTask = newTask;
-		
-	}
 
 	/*
 	 * Initialize contact towards socket if connection fails, stop script
@@ -183,12 +143,8 @@ public class NexHelper extends NexProvider implements Runnable {
 			log("NexHelper has been initialized towards Nexus");
 		} else {
 			log("Connection Towards Nexus failed");
-			disconnect();
+			messageQueue.push(new DisconnectMessage(this, null, "failed to initialize contact"));
 		}
-	}
-	
-	private void disconnect() {
-		messageQueue.push("DISCONNECT");
 	}
 
 	private String getRespond() {
@@ -196,22 +152,6 @@ public class NexHelper extends NexProvider implements Runnable {
 			respond = "log:1:" + NexusScript.currentTask.getTaskID();
 		}
 		return "log:0";
-	}
-
-	/*
-	 * reads the respond from server if respond is anything else than the 'standard'
-	 * - "logged:fine" put respond to messageQueue
-	 */
-	private void handleRespond(String respond2) {
-		if (!respond.equals("logged:fine")) {
-			messageQueue.push(respond);
-		}
-	}
-
-	public void createLog(Task currentTask) {
-		if (currentTask != null) {
-			messageQueue.push("task_log:" + currentTask.getTaskID() + ":" + currentTask.getGainedXP());
-		}
 	}
 
 	/*
@@ -236,133 +176,21 @@ public class NexHelper extends NexProvider implements Runnable {
 		lastLog = System.currentTimeMillis();
 	}
 
-	private void requestTask(PrintWriter out, BufferedReader in) throws IOException {
-		String string = "skills;";
-		for(Skill skill : Skill.values()) {
-			string += skill + "," + skills.getStatic(skill) + ";";
-		}
-		log(string);
-		out.println("task_request:1:" + string);
-		respond = in.readLine();
-		log("got respond from task_request:" + respond);
-		handleRespond(respond);
-	}
-
 	public void getNewTask() {
 		log("lets get new task");
 		newTask = TaskHandler.popTask();
 		if (newTask != null) {
 			NexusScript.currentTask = newTask;
 		} else if (!messageQueue.contains("NEW_TASK")) {
-			messageQueue.push("NEW_TASK");
+			messageQueue.push(new RequestTask(this, messageQueue, null));
 		}
-	}
-
-	private void handleTaskRespond(String[] parsed) {
-		if (parsed[1].equals("0")) {
-			handleTaskRespond(parsed);
-			NexusScript.SHOULD_RUN = false;
-		} else {
-			taskType = parsed[2];
-			switch (taskType) {
-			case "WOODCUTTING":
-				handleWoodCuttingRespond(parsed);
-				break;
-			case "MULE_WITHDRAW":
-				handleMuleRespond(parsed);
-				break;
-			case "BREAK":
-				handleBreakRespond(parsed);
-				break;
-
-			}
-		}
-
-	}
-
-	private void handleMuleRespond(String[] parsed) {
-		tradeName = parsed[3];
-		int world = Integer.parseInt(parsed[4]);
-		int itemID = Integer.parseInt(parsed[5]);
-		int itemAmount = Integer.parseInt(parsed[6]);
-		int startAmount = (int) inventory.getAmount(itemID);
-		newTask = new DepositToSlave(world, itemID, itemAmount, startAmount, tradeName);
-		newTask.setTimeStartedMilli(currentTime);
-		newTask.setCondition(()-> newTask.tradeIsCompleted);
-		TaskHandler.addTask(newTask);
-		
-	}
-
-	private void handleWoodCuttingRespond(String[] parsed) {
-		currentTaskID = parsed[3];
-		parsedBankArea = parsed[4];
-		parsedActionArea = parsed[5];
-		parsedAxeID = parsed[6];
-		axeName = parsed[7];
-		treeName = parsed[8];
-		parsedBreakCondition = parsed[9];
-		breakAfter = parsed[10];
-		breakCondition = getBreakCondition(parsedBreakCondition, breakAfter);
-		if (parsedBankArea.equals("none")) {
-			bankArea = null;
-		} else {
-			bankArea = WebBank.parseCoordinates(parsedBankArea);
-		}
-		axeID = Integer.parseInt(parsedAxeID);
-		actionArea = WebBank.parseCoordinates(parsedActionArea);
-		axe = new RSItem(axeName, axeID);
-		log("Axe:" + axe.getId() + ":" + axe.getName());
-		log("Break in: "
-				+ (((currentTime + (Integer.parseInt(breakAfter) * 1000 * 60) - currentTime)) / 60000 + "minutes"));
-		newTask = new WoodcuttingTask(actionArea, bankArea, breakCondition, axe, treeName);
-		newTask.setBreakType(parsedBreakCondition);
-		newTask.setBreakAfter(breakAfter);
-		newTask.setTimeStartedMilli(currentTime);
-		newTask.setTaskID(currentTaskID);
-		TaskHandler.addTask(newTask);
-
-	}
-
-	private void handleBreakRespond(String[] parsed) {
-		currentTaskID = parsed[3];
-		parsedBreakCondition = parsed[4];
-		breakAfter = parsed[5];
-		newTask = new Task();
-		newTask.setTaskType(TaskType.BREAK);
-		newTask.setBreakType(parsedBreakCondition);
-		newTask.setCondition(getBreakCondition(parsedBreakCondition, breakAfter));
-		newTask.setBreakAfter(breakAfter);
-		newTask.setTimeStartedMilli(currentTime);
-		newTask.setTaskID(currentTaskID);
-		TaskHandler.addTask(newTask);
-
-	}
-
-	private BooleanSupplier getBreakCondition(String parsedBreakCondition, String breakAfter) {
-		if (parsedBreakCondition.equals("LEVEL")) {
-			return breakCondition = () -> skills.getStatic(Skill.WOODCUTTING) > Integer
-					.parseInt(breakAfter);
-		} else if (parsedBreakCondition.equals("TIME")) {
-			currentTime = System.currentTimeMillis();
-			return breakCondition = () -> System.currentTimeMillis() > currentTime
-					+ Integer.parseInt(breakAfter) * 1000 * 60;
-		}
-		return null;
 	}
 
 	private void checkIfBanned(PrintWriter out, BufferedReader in) throws IOException {
 		if (getPlayer().isDisabledMessageVisible()) {
-			sendBannedMessage(out, in);
+			messageQueue.push(new BannedMessage(this, null, "Player is banned"));
 		}
 	}
-
-	private void sendBannedMessage(PrintWriter out, BufferedReader in) throws IOException {
-		out.println("banned:1");
-		respond = in.readLine();
-		messageQueue.push(respond);
-	}
-
-	
 
 	public static String getIP() {
 		URL url;

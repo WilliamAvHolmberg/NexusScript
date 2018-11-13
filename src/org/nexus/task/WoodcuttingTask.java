@@ -11,10 +11,9 @@ public class WoodcuttingTask extends Task {
 	private String treeName;
 	private RSItem axe;
 
-	public WoodcuttingTask(Area actionArea, Area bankArea, BooleanSupplier condition, RSItem axe, String treeName) {
+	public WoodcuttingTask(Area actionArea, Area bankArea, RSItem axe, String treeName) {
 		setActionArea(actionArea);
 		setBankArea(bankArea);
-		setCondition(condition);
 		setTaskType(TaskType.WOODCUTTING);
 		this.treeName = treeName;
 		this.axe = axe;

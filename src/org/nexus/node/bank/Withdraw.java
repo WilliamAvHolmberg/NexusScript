@@ -2,6 +2,7 @@ package org.nexus.node.bank;
 
 import org.nexus.NexusScript;
 import org.nexus.communication.NexHelper;
+import org.nexus.communication.message.request.MuleRequest;
 import org.nexus.handler.BankHandler;
 import org.nexus.handler.GrandExchangeHandler;
 import org.nexus.node.Node;
@@ -45,7 +46,7 @@ public class Withdraw extends Node {
 
 	private void handleBankDoesNotContainItem(MethodProvider methodProvider, WithdrawItem item, int amountRequiredFromGE) {
 		if(item.getItemID() == 995) {
-			NexHelper.messageQueue.push("MULE_WITHDRAW:995:" + amountRequiredFromGE);
+			NexHelper.messageQueue.push(new MuleRequest(methodProvider, NexHelper.messageQueue, "MULE_WITHDRAW:995:" + amountRequiredFromGE));
 			methodProvider.log("sleep until we got new task");
 			Timing.waitCondition(() -> NexusScript.currentTask.getTaskType() == TaskType.WITHDRAW_FROM_MULE, 15000);
 		}else {

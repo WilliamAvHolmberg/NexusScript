@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.nexus.communication.NexHelper;
+import org.nexus.communication.message.TaskLog;
 import org.nexus.event.LoginEvent;
 import org.nexus.event.LoginListener;
 import org.nexus.handler.BankHandler;
@@ -34,6 +35,7 @@ import org.nexus.utils.Timing;
 import org.nexus.utils.grandexchange.RSExchange;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.EquipmentSlot;
+import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
@@ -62,7 +64,7 @@ public class NexusScript extends Script {
 		username = bot.getUsername();
 		password = getPassword();
 		log("lets sleep for 5 seconds for everything to initialize proper");
-		sleep(5000);
+		sleep(15000);
 
 		logEvent = new LoginEvent(this, username, password, this);
 		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
@@ -71,9 +73,6 @@ public class NexusScript extends Script {
 		helper.exchangeContext(getBot());
 		nexHelperThread = new Thread(helper);
 		nexHelperThread.start();
-		if (username.equals("adrohdell@gmail.com")) {
-			BankHandler.addItem(new WithdrawItem(995, 10000, "Coins"));
-		}
 
 		nodeHandler = new NodeHandler();
 		nodeHandler.exchangeContext(getBot());
@@ -121,7 +120,7 @@ public class NexusScript extends Script {
 			currentTask.setGainedXP(experienceTracker.getGainedXP(currentTask.getSkill()));
 		}
 		// TODO - MONEY MADE
-		helper.createLog(currentTask);
+		helper.messageQueue.push(new TaskLog(this, helper.messageQueue, currentTask, "Task Completed"));
 		currentTask = null;
 	}
 
@@ -205,6 +204,16 @@ public class NexusScript extends Script {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void onMessage(Message message) throws InterruptedException {
+		String txt = message.getMessage().toLowerCase();
+		
+		if (txt.contains("accepted trade.") && currentTask != null && currentTask.getTaskType() == TaskType.DEPOSIT_TO_SLAVE) {
+			NexusScript.currentTask = null;
+		}
+		
 	}
 
 	@Override
