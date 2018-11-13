@@ -39,7 +39,7 @@ public class TradeWithSlave extends Trade implements MessageListener {
 	@Override
 	public void onMessage(Message message) throws InterruptedException {
 		String txt = message.getMessage().toLowerCase();
-
+		
 		if (txt.contains("accepted")) {
 			NexusScript.currentTask = null;
 		}

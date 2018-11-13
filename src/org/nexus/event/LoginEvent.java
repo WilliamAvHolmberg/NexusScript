@@ -2,6 +2,7 @@ package org.nexus.event;
 
 import org.nexus.NexusScript;
 import org.nexus.communication.NexHelper;
+import org.nexus.communication.message.BannedMessage;
 import org.nexus.task.TaskType;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.constants.ResponseCode;
@@ -35,7 +36,7 @@ public final class LoginEvent extends Event {
 		if (!(NexusScript.currentTask != null && NexusScript.currentTask.getTaskType() == TaskType.BREAK && !NexusScript.currentTask.isCompleted())) {
 			methodProvider.log("log in:");
 			if(isDisabledMessageVisible()) {
-				NexHelper.messageQueue.push("BANNED");
+				NexHelper.messageQueue.push(new BannedMessage(context, NexHelper.messageQueue, null));
 			}
 			else if (!getBot().isLoaded()) {
 				return 1000;
