@@ -13,7 +13,6 @@ import org.nexus.objects.RSItem;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
-import org.nexus.task.mule.DepositToSlave;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
@@ -29,7 +28,7 @@ public abstract class TaskRespond extends NexMessage {
 
 	public BooleanSupplier getBreakCondition(String parsedBreakCondition, String breakAfter, long currentTime) {
 		return  () -> System.currentTimeMillis() > currentTime
-				+ Integer.parseInt(breakAfter) * 1000 * 60;
+				+ Double.parseDouble(breakAfter) * 1000 * 60;
 	}
 
 }

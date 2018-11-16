@@ -2,6 +2,8 @@ package org.nexus.handler;
 
 import org.nexus.NexusScript;
 import org.nexus.node.Node;
+import org.nexus.node.bank.Deposit;
+import org.nexus.node.bank.Withdraw;
 import org.nexus.node.equip.EquipItem;
 import org.nexus.node.general.WalkToArea;
 import org.nexus.provider.NexProvider;
@@ -14,6 +16,8 @@ public abstract class Handler extends NexProvider {
 	
 	public static WalkToArea walkToAreaNode = new WalkToArea();
 	public static EquipItem equipItemNode = new EquipItem();
+	public static Withdraw withdraw = new Withdraw();
+	public static Deposit deposit = new Deposit();
 	
 	public abstract Node getNode();
 	

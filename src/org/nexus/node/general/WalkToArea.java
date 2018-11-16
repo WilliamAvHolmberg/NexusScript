@@ -5,6 +5,8 @@ import java.util.List;
 import org.nexus.NexusScript;
 import org.nexus.node.Node;
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.event.WebWalkEvent;
+import org.osbot.rs07.event.webwalk.PathPreferenceProfile;
 import org.osbot.rs07.script.MethodProvider;
 
 public class WalkToArea extends Node{
@@ -22,7 +24,12 @@ public class WalkToArea extends Node{
 	@Override
 	public void execute(MethodProvider methodProvider) {
 		methodProvider.log("lets walk to webbank");
-		methodProvider.walking.webWalk(area);		
+		methodProvider.walking.webWalk(area);	
+
+		WebWalkEvent event = new WebWalkEvent(area);
+
+		event.setPathPreferenceProfile(PathPreferenceProfile.DEFAULT.setAllowTeleports(true));
+		methodProvider.execute(event);
 	}
 
 	@Override

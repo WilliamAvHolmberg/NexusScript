@@ -13,7 +13,6 @@ import org.nexus.objects.RSItem;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
-import org.nexus.task.mule.DepositToSlave;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.Skill;
@@ -56,7 +55,8 @@ public class WoodcuttingRespond extends TaskRespond {
 				+ (((currentTime + (Integer.parseInt(breakAfter) * 1000 * 60) - currentTime)) / 60000 + "minutes"));
 		newTask = new WoodcuttingTask(actionArea, bankArea, axe, treeName);
 		newTask.setBreakType(parsedBreakCondition);
-		newTask.setBreakAfter(breakAfter);
+		newTask.setBreakAfter((int)Double.parseDouble(breakAfter));
+		// TODO newTask.setWantedLevel((int)Double.parseDouble(parsedlevelGoal));
 		newTask.setTimeStartedMilli(currentTime);
 		newTask.setTaskID(currentTaskID);
 		TaskHandler.addTask(newTask);

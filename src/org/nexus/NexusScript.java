@@ -10,12 +10,13 @@ import org.nexus.communication.message.TaskLog;
 import org.nexus.event.LoginEvent;
 import org.nexus.event.LoginListener;
 import org.nexus.handler.BankHandler;
-import org.nexus.handler.GrandExchangeHandler;
+import org.nexus.handler.BuyItemHandler;
 import org.nexus.handler.NodeHandler;
 import org.nexus.handler.SimpleCacheManager;
 import org.nexus.handler.TaskHandler;
 import org.nexus.handler.gear.Gear;
 import org.nexus.handler.gear.GearHandler;
+import org.nexus.loot.LootHandler;
 import org.nexus.node.Node;
 import org.nexus.node.bank.Deposit;
 import org.nexus.node.bank.OpenBank;
@@ -31,12 +32,15 @@ import org.nexus.provider.NexProvider;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
+import org.nexus.task.mule.DepositToMule;
 import org.nexus.utils.Timing;
+import org.nexus.utils.grandexchange.Exchange;
 import org.nexus.utils.grandexchange.RSExchange;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.api.util.ExperienceTracker;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -50,12 +54,12 @@ public class NexusScript extends Script {
 	private Node currentNode;
 	public static NodeHandler nodeHandler;
 	public static Task currentTask;
-	private String[] stockArr;
 	private Node node;
 	private LoginEvent logEvent;
 	String username;
 	String password;
 	NexProvider provider;
+	public static ExperienceTracker experienceTracker;
 
 	@Override
 	public void onStart() {
@@ -64,7 +68,7 @@ public class NexusScript extends Script {
 		username = bot.getUsername();
 		password = getPassword();
 		log("lets sleep for 5 seconds for everything to initialize proper");
-		sleep(15000);
+		//sleep(15000);
 
 		logEvent = new LoginEvent(this, username, password, this);
 		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
@@ -77,7 +81,8 @@ public class NexusScript extends Script {
 		nodeHandler = new NodeHandler();
 		nodeHandler.exchangeContext(getBot());
 		nodeHandler.init();
-		experienceTracker.start(Skill.WOODCUTTING);
+		currentTask = new DepositToMule();
+		this.experienceTracker = getExperienceTracker();
 	}
 
 	private String getPassword() {
@@ -105,7 +110,7 @@ public class NexusScript extends Script {
 			log("Lets sleep until we found task");
 			Timing.waitCondition(() -> !TaskHandler.available_tasks.isEmpty() || currentTask != null, 15000);
 			experienceTracker.start(Skill.WOODCUTTING);
-		} else if (currentTask.isCompleted()) {
+		} else if (currentTask.isCompleted(this)) {
 			handleCompletedTask();
 		} else {
 			handleStates();
@@ -159,8 +164,8 @@ public class NexusScript extends Script {
 		if (!BankHandler.itemsToWithdraw.isEmpty()) {
 			g.drawString("Item needed:" + BankHandler.getWithdrawItem(), 50, 75);
 		}
-		if (!GrandExchangeHandler.items.isEmpty()) {
-			g.drawString("Item needed:" + GrandExchangeHandler.getItem(), 50, 100);
+		if (!BuyItemHandler.items.isEmpty()) {
+			g.drawString("Item needed:" + BuyItemHandler.getItem(), 50, 100);
 		}
 		if (!BankHandler.itemsToDeposit.isEmpty()) {
 			g.drawString("lets deposit:" + BankHandler.itemsToDeposit.peek().getType(), 50, 100);
@@ -170,23 +175,8 @@ public class NexusScript extends Script {
 		}
 
 		if (currentTask != null) {
-			g.drawString("XP Gained: " + experienceTracker.getGainedXP(currentTask.getSkill()), 350, 50);
-			g.drawString("XP Per Hour: " + experienceTracker.getGainedXPPerHour(currentTask.getSkill()), 350, 75);
-			g.drawString("Logs Per Hour: " + experienceTracker.getGainedXPPerHour(currentTask.getSkill()) / 25, 350,
-					100);
-			if (currentTask.getBreakType() != null && currentTask.getBreakAfter() != null) {
-				switch (currentTask.getBreakType()) {
-				case "LEVEL":
-					g.drawString("Break after Level: " + currentTask.getBreakAfter(), 350, 125);
-					break;
-				case "TIME":
-					g.drawString("Break in: " + currentTask.getTimeLeft() + " minutes", 350, 125);
-				}
-			}
+			currentTask.onPaint(g);
 		}
-
-		g.drawString("Tasks: " + TaskHandler.getTaskList(), 350, 150);
-
 	}
 
 	private String getIP() {
@@ -210,15 +200,24 @@ public class NexusScript extends Script {
 	public void onMessage(Message message) throws InterruptedException {
 		String txt = message.getMessage().toLowerCase();
 		
-		if (txt.contains("accepted trade.") && currentTask != null && currentTask.getTaskType() == TaskType.DEPOSIT_TO_SLAVE) {
-			NexusScript.currentTask = null;
+		if (txt.contains("accepted trade.") && currentTask != null && currentTask.getTaskType() == TaskType.DEPOSIT_ITEM_TO_PLAYER || currentTask.getTaskType() == TaskType.WITHDRAW_ITEM_FROM_MULE) {
+			NexusScript.currentTask.tradeIsCompleted = true;
 		}
 		
+	}
+	
+	public static int perHour(int profit) {
+		long elapsedTimeMs = System.currentTimeMillis() - currentTask.getTimeStartedMilli();
+		return  (int) (profit * (3600000.0 / elapsedTimeMs));
 	}
 
 	@Override
 	public void onExit() {
 		SHOULD_RUN = false;
+	}
+	
+	public static void setTracker(Skill skill) {
+		experienceTracker.start(skill);
 	}
 
 }

@@ -27,8 +27,7 @@ import org.nexus.provider.NexProvider;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
-import org.nexus.task.mule.DepositToSlave;
-import org.nexus.task.mule.WithdrawFromMule;
+import org.nexus.task.mule.WithdrawFromPlayer;
 import org.nexus.utils.Timing;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.map.Area;
@@ -37,7 +36,7 @@ import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
 public class NexHelper extends NexProvider implements Runnable {
-	 private String ip = "0.0.0.0";
+	 private String ip = "192.168.10.127";
 	//private String ip = "oxnetserver.ddns.net";
 	private int port = 43594;
 	private long lastLog = 0;
@@ -119,6 +118,7 @@ public class NexHelper extends NexProvider implements Runnable {
 				break;
 			case "UNSUCCESSFULL_MULE_REQUEST":
 				messageQueue.push(new DisconnectMessage(this, messageQueue, "Failed to get mule"));
+				break;
 			default:
 				log("no respond found for message:" + respond);
 				break;
@@ -182,7 +182,7 @@ public class NexHelper extends NexProvider implements Runnable {
 	}
 
 	private void checkIfBanned(PrintWriter out, BufferedReader in) throws IOException {
-		if (getPlayer().isDisabledMessageVisible()) {
+		if (!client.isLoggedIn() && getPlayer().isDisabledMessageVisible()) {
 			messageQueue.push(new BannedMessage(this, null, "Player is banned"));
 		}
 	}

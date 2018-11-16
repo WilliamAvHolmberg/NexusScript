@@ -1,26 +1,28 @@
 package org.nexus.task;
 
+import java.awt.Graphics2D;
 import java.util.function.BooleanSupplier;
 
 import org.nexus.NexusScript;
 import org.nexus.handler.gear.Gear;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.api.util.ExperienceTracker;
 import org.osbot.rs07.script.MethodProvider;
 
-public class Task {
+public abstract class Task {
 
 	private Area bankArea;
 	private Area actionArea;
-	private BooleanSupplier condition;
 	private TaskType taskType;
 	private Gear preferredGear;
 	private String breakType;
-	private String breakAfter;
+	protected int breakAfterTime = 0;
 	private String taskID;
-	private long timeStartedMilli;
+	protected long timeStartedMilli;
 	private int gainedXP = 0;
 	public boolean tradeIsCompleted = false;
+	private int wantedLevel = 0;
 
 	public static Gear EMPTY_GEAR = new Gear();
 
@@ -40,17 +42,19 @@ public class Task {
 		this.actionArea = actionArea;
 	}
 
-	public void setCondition(BooleanSupplier condition) {
-		this.condition = condition;
-	}
 
-	public boolean isCompleted() {
-		if (condition != null) {
-			return condition.getAsBoolean();
-		}else if(breakAfter != null && timeStartedMilli > 0) {
-			return getTimeLeft() <= 0;
+	public boolean isCompleted(MethodProvider methodProvider) {
+		methodProvider.log(breakAfterTime);
+		methodProvider.log(timeStartedMilli);
+		if(breakAfterTime > 0 && timeStartedMilli > 0 && getSkill() != null) {
+			return getTimeLeft() <= 0 || getWantedLevel() <= methodProvider.getSkills().getStatic(getSkill());
+		}else if (breakAfterTime > 0 && timeStartedMilli > 0 && getTimeLeft() <= 0) {
+			return true;
+		} else if (getSkill() != null && getWantedLevel() <= methodProvider.getSkills().getStatic(getSkill())) {
+			return true;
 		}
 		return false;
+
 	}
 
 	public TaskType getTaskType() {
@@ -80,12 +84,12 @@ public class Task {
 		this.breakType = parsedBreakCondition;
 	}
 
-	public String getBreakAfter() {
-		return this.breakAfter;
+	public int getBreakAfter() {
+		return this.breakAfterTime;
 	}
 
-	public void setBreakAfter(String breakAfter) {
-		this.breakAfter = breakAfter;
+	public void setBreakAfter(int breakAfter) {
+		this.breakAfterTime = breakAfter;
 	}
 
 	public long getTimeStartedMilli() {
@@ -109,12 +113,13 @@ public class Task {
 	}
 
 	/**
-	 * break after is given in minutes so we have to cast it to millis.
-	 * When the calculation is done we have to divide by 60000 to go back to minutes.
+	 * break after is given in minutes so we have to cast it to millis. When the
+	 * calculation is done we have to divide by 60000 to go back to minutes.
+	 * 
 	 * @return time left of current task
 	 */
 	public long getTimeLeft() {
-		return ((timeStartedMilli + (Integer.parseInt(this.breakAfter) * 60 * 1000)) - System.currentTimeMillis())
+		return ((timeStartedMilli + (this.breakAfterTime * 60 * 1000)) - System.currentTimeMillis())
 				/ 60000;
 	}
 
@@ -131,6 +136,16 @@ public class Task {
 			return "" + this.taskType;
 		}
 		return "No TaskType defined";
+	}
+
+	public abstract void onPaint(Graphics2D g);
+
+	public void setWantedLevel(int wantedLevel) {
+		this.wantedLevel = wantedLevel;
+	}
+
+	public int getWantedLevel() {
+		return wantedLevel;
 	}
 
 }

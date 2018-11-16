@@ -1,5 +1,7 @@
 package org.nexus.objects;
 
+import org.nexus.utils.grandexchange.Exchange;
+
 public class RSItem {
 	private String name;
 	private int id;
@@ -23,6 +25,10 @@ public class RSItem {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+	
+	public int getItemPrice() {
+		return Exchange.getPrice(id, null);
 	}
 
 }

@@ -5,7 +5,7 @@ import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.MethodProvider;
 
-public class TradeWithMule extends Trade{
+public class DepositItemToPlayer extends Trade{
 
 	@Override
 	public boolean shallExecute(MethodProvider methodProvider) {

@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Stack;
 
 import org.nexus.NexusScript;
+import org.nexus.handler.gear.Inventory;
 import org.nexus.node.Node;
 import org.nexus.node.bank.Deposit;
 import org.nexus.node.bank.OpenBank;
 import org.nexus.node.bank.Withdraw;
 import org.nexus.node.general.WalkToArea;
+import org.nexus.node.mule.CheckIfWeShallSellItems;
 import org.nexus.objects.DepositItem;
+import org.nexus.objects.DepositItem.DepositType;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.task.Task;
 import org.osbot.rs07.api.ui.EquipmentSlot;
@@ -22,8 +25,9 @@ public class BankHandler extends Handler {
 	public static OpenBank openBankNode = new OpenBank();
 	public static Withdraw withdrawNode = new Withdraw();
 	public static Deposit depositNode = new Deposit();
+	public static CheckIfWeShallSellItems checkIfSellItemNode = new CheckIfWeShallSellItems();
 
-	private String[] stockArr;
+	private int[] stockArr;
 
 
 	@Override
@@ -37,14 +41,19 @@ public class BankHandler extends Handler {
 	}
 
 	private Node getWithdrawNode(WithdrawItem withdrawItem) {
-		if (inventory.getAmount(withdrawItem.getItemID()) == withdrawItem.getAmount()) {
+		if(withdrawItem.getInventory() != null && !Inventory.inventoryOnlyContainsRequiredItems(this, withdrawItem.getInventory())) {
+			return getDepositNode(new DepositItem(DepositType.DEPOSIT_ALL_EXCEPT, withdrawItem.getInventory().getItemIds()));
+		}else if (inventory.getAmount(withdrawItem.getItemID()) == withdrawItem.getAmount()) {
 			BankHandler.removeItem(withdrawItem);
+			log("lets remove item");
 			return null;
 		} else if (!playerInBank()) {
 			return walkToAreaNode.setArea(getBankArea());
 		} else if (!bankIsOpen()) {
 			return openBankNode;
-		} else {
+		} else if(System.currentTimeMillis() > checkIfSellItemNode.last_check + 3600 * 60 * 1000) {
+			return checkIfSellItemNode;
+		}	else {
 			return withdrawNode.setItem(withdrawItem);
 		}
 	}
@@ -82,8 +91,8 @@ public class BankHandler extends Handler {
 			}
 			break;
 		case DEPOSIT_ALL_EXCEPT:
-			stockArr = new String[depositItem.getItems().size()];
-			if (inventory.isEmptyExcept(depositItem.getItems().toArray((stockArr))) ) {
+			stockArr = depositItem.getItems().stream().mapToInt(i->i).toArray();
+			if (inventory.isEmptyExcept(stockArr) ) {
 				BankHandler.removeItem(depositItem);
 			}
 			break;

@@ -21,7 +21,7 @@ public class WoodcuttingHandler extends Handler {
 
 	public static Cut cutTreeNode = new Cut();;
 	List<String> itemsToWithdraw = new ArrayList<String>();
-	List<String> itemsToKeep = new ArrayList<String>();
+	List<Integer> itemsToKeep = new ArrayList<Integer>();
 
 	public WoodcuttingHandler() {
 		cutTreeNode = new Cut();
@@ -39,9 +39,9 @@ public class WoodcuttingHandler extends Handler {
 			GearHandler.addItem(new GearItem(EquipmentSlot.WEAPON, wcTask.getAxe()));
 			return null;
 		} else if (inventory.isFull() || playerInBank() && shouldDepositUnnecessaryItems(wcTask)) { //TODO, maybe add method, getInventory at bank
-			itemsToKeep = new ArrayList<String>();
-			if(!equipment.isWieldingWeapon(axeName)) {
-				itemsToKeep.add(axeName);
+			itemsToKeep = new ArrayList<Integer>();
+			if(!equipment.isWieldingWeapon(axeID)) {
+				itemsToKeep.add(axeID);
 			}
 			BankHandler.addItem(new DepositItem(DepositItem.DepositType.DEPOSIT_ALL_EXCEPT, itemsToKeep));
 		} else if(!playerInActionArea()){

@@ -5,7 +5,7 @@ import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.MethodProvider;
 
-public class TradeWithSlave extends Trade implements MessageListener {
+public class WithdrawItemFromPlayer extends Trade implements MessageListener {
 
 	@Override
 	public boolean shallExecute(MethodProvider methodProvider){

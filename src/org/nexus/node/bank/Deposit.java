@@ -15,8 +15,8 @@ import org.osbot.rs07.script.MethodProvider;
 
 public class Deposit extends Node {
 	private DepositItem depositItem;
-	private List<String> itemsToKeep;
-	private String[] stockArr;
+	private List<Integer> itemsToKeep;
+	private int[] stockArr;
 	private MethodProvider methodProvider;
 	private boolean add = false;
 
@@ -29,26 +29,32 @@ public class Deposit extends Node {
 	@Override
 	public void execute(MethodProvider methodProvider) {
 		this.methodProvider = methodProvider;
-		depositItem = BankHandler.getDepositItem();
 		itemsToKeep = depositItem.getItems();
-		stockArr = new String[itemsToKeep.size()];
-		switch (depositItem.getType()) {
-		case DEPOSIT_ALL:
-			itemsToKeep = null;
-			depositAll();
-			break;
-		case DEPOSIT_ALL_EXCEPT:
-			depositAllExcept(itemsToKeep);	
-		default:
-			break;
+		try {
+			if (methodProvider.grandExchange.close() && methodProvider.bank.open()) {
+				switch (depositItem.getType()) {
+				case DEPOSIT_ALL:
+					itemsToKeep = null;
+					depositAll();
+					break;
+				case DEPOSIT_ALL_EXCEPT:
+					depositAllExcept(itemsToKeep);
+				default:
+					break;
 
+				}
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
-	private void depositAllExcept(List<String> items) {
+	private void depositAllExcept(List<Integer> items) {
 		methodProvider.log("lets deposaaait");
 		if (items != null && !items.isEmpty()) {
-			methodProvider.bank.depositAllExcept(items.toArray(stockArr));
+			stockArr = items.stream().mapToInt(i->i).toArray();
+			methodProvider.bank.depositAllExcept(stockArr);
 		} else {
 			methodProvider.bank.depositAll();
 		}

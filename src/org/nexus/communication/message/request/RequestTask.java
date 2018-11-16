@@ -8,6 +8,7 @@ import java.util.Stack;
 import org.nexus.communication.message.DisconnectMessage;
 import org.nexus.communication.message.NexMessage;
 import org.nexus.communication.message.respond.BreakRespond;
+import org.nexus.communication.message.respond.CombatRespond;
 import org.nexus.communication.message.respond.MuleRespond;
 import org.nexus.communication.message.respond.WoodcuttingRespond;
 import org.osbot.rs07.api.ui.Skill;
@@ -32,7 +33,7 @@ public class RequestTask extends NexRequest{
 	}
 	
 	private void handleRespond(String respond) {
-		if (respond.contains("TASK_RESPOND:0")) {
+		if (respond.contains("TASK_RESPOND:0") || respond.contains("DISCONNECT")) {
 			messageQueue.push(new DisconnectMessage(methodProvider, messageQueue, "Failed to get task"));
 		} else {
 			methodProvider.log("Task respond!:" + respond);
@@ -47,9 +48,17 @@ public class RequestTask extends NexRequest{
 				methodProvider.log("respond is not null here!" + respond);
 				messageQueue.push(new WoodcuttingRespond(methodProvider, messageQueue, respond));
 				break;
+			case "COMBAT":
+				methodProvider.log("respond is not null here!" + respond);
+				messageQueue.push(new CombatRespond(methodProvider, messageQueue, respond));
+				break;
 			case "MULE_WITHDRAW":
 				messageQueue.push(new MuleRespond(methodProvider, messageQueue, respond));
 				break;
+			case "MULE_DEPOSIT":
+				messageQueue.push(new MuleRespond(methodProvider, messageQueue, respond));
+				break;
+				
 			}
 		}
 	}

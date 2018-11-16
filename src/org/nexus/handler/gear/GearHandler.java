@@ -72,17 +72,8 @@ public class GearHandler extends Handler {
 	 * item: gear) { if(item.getSlot() == slot) { return item; } } return null; }
 	 */
 
-	// TODO
-	/*
-	 * public static ArrayList<String> getCurrentEquipedGear(MethodProvider
-	 * methodProvider){ ArrayList<String> currentEquipedGear = new
-	 * ArrayList<String>(); for(EquipmentSlot slot: EquipmentSlot.values()) {
-	 * if(equipment) }
-	 * 
-	 * return null;
-	 * 
-	 * }
-	 */
+
+	
 
 	public static GearItem getWithdrawItem() {
 		if (itemsToEquip.isEmpty()) {

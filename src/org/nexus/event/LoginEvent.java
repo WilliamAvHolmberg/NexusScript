@@ -33,7 +33,7 @@ public final class LoginEvent extends Event {
 	@Override
 	public final int execute() throws InterruptedException {
 		methodProvider.log("why are wenot calling this shit");
-		if (!(NexusScript.currentTask != null && NexusScript.currentTask.getTaskType() == TaskType.BREAK && !NexusScript.currentTask.isCompleted())) {
+		if (!(NexusScript.currentTask != null && NexusScript.currentTask.getTaskType() == TaskType.BREAK && !NexusScript.currentTask.isCompleted(context))) {
 			methodProvider.log("log in:");
 			if(isDisabledMessageVisible()) {
 				NexHelper.messageQueue.push(new BannedMessage(context, NexHelper.messageQueue, null));
