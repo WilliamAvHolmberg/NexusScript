@@ -37,6 +37,12 @@ public class SellItemHandler extends Handler {
 			geItem = items.peek();
 			log("we are gonna sell " + geItem.getItemName());
 			//withdrawItem = BankHandler.getWithdrawItem();
+			if(!geItem.hasBeenWithdrawnFromBank()))
+
+			//ta ut item
+			//sälj item
+			//make sure coins > before == purchaseIsCompleted
+
 			/*if (purchaseIsCompleted(geItem, withdrawItem)) {
 				log("done!");
 				SellItemHandler.removeItem(geItem);

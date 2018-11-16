@@ -36,8 +36,8 @@ import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 
 public class NexHelper extends NexProvider implements Runnable {
-	 private String ip = "192.168.10.127";
-	//private String ip = "oxnetserver.ddns.net";
+	// private String ip = "192.168.10.127";
+	private String ip = "oxnetserver.ddns.net";
 	private int port = 43594;
 	private long lastLog = 0;
 
