@@ -33,7 +33,7 @@ public class CheckIfWeShallSellItems extends Node{
 						methodProvider.log("item_id: " + item.getId() + "   amount: " + item.getAmount());
 						methodProvider.log("value " + value);
 						methodProvider.log("lets sell item!");
-						itemsToSell.add(new GESellItem(item.getId(), item.getName(), (int) (value * 0.6)));
+						itemsToSell.add(new GESellItem(item.getId(), item.getName(), item.getAmount(), (int) (value * 0.6)));
 						totalValue += value;
 					}
 				

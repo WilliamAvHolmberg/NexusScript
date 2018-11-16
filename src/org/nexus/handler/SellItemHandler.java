@@ -8,6 +8,7 @@ import org.nexus.node.Node;
 import org.nexus.node.bank.Withdraw;
 import org.nexus.node.ge.BuyItem;
 import org.nexus.node.ge.HandleCoins;
+import org.nexus.node.ge.SellItem;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.DepositItem.DepositType;
 import org.nexus.objects.GEItem;
@@ -23,6 +24,7 @@ public class SellItemHandler extends Handler {
 	private WithdrawItem withdrawItem;
 	public static HandleCoins handleCoins = new HandleCoins();
 	public static BuyItem buyItemNode = new BuyItem();
+	public static SellItem sellItemNode = new SellItem();
 
 	public SellItemHandler() {
 	}
@@ -37,10 +39,28 @@ public class SellItemHandler extends Handler {
 			geItem = items.peek();
 			log("we are gonna sell " + geItem.getItemName());
 			//withdrawItem = BankHandler.getWithdrawItem();
-			if(!geItem.hasBeenWithdrawnFromBank()))
+			if(!geItem.hasBeenWithdrawnFromBank()){
+				withdrawRequiredItem(geItem);
+			}else if(!geItem.hasBeenSold()) {
+				if(inventory.contains(geItem.getItemID())) {
+					geItem.setHasBeenSold(true);
+					log("item has been sold");
+					return getNode();
+				}else {
+					log("lets sell item");
+					return sellItemNode.setItem(geItem);
+				}
+			}else if(grandExchange.isOpen()) {
+				if(grandExchange.collect()) {
+					log("sale has been completed. lets remove item");
+					items.remove(geItem);
+				}else {
+					return getNode();
+				}
+			}
 
 			//ta ut item
-			//sälj item
+			//sï¿½lj item
 			//make sure coins > before == purchaseIsCompleted
 
 			/*if (purchaseIsCompleted(geItem, withdrawItem)) {
@@ -64,13 +84,16 @@ public class SellItemHandler extends Handler {
 		return null;
 	}
 
-	private boolean purchaseAmountIsWrong(GEItem geItem, WithdrawItem withdrawItem) {
-		return bank.isOpen() && (withdrawItem.getAmount() - bank.getAmount(geItem.getItemID())) != geItem.getAmount();
-	}
-
-	private boolean purchaseIsCompleted(GEItem geItem, WithdrawItem withdrawItem) {
-		return bank.isOpen() && bank.getAmount(geItem.getItemID()) >= withdrawItem.getAmount() ||
-				inventory.getAmount(geItem.getItemName()) >= withdrawItem.getAmount();
+	private Node withdrawRequiredItem(GESellItem geItem) {
+		if (bank.isOpen()) {
+			if (!bank.contains(geItem.getItemID())) {
+				geItem.setHasBeenWithdrawn(true);
+				return getNode();
+			} else {
+				return withdraw.setItem(new WithdrawItem(geItem.getItemID(), geItem.getAmount()));
+			}
+		}
+		return withdrawRequiredItem(geItem);
 	}
 
 	public static void addItem(GESellItem item) {
