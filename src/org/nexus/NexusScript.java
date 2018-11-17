@@ -11,14 +11,15 @@ import org.nexus.event.LoginEvent;
 import org.nexus.event.LoginListener;
 import org.nexus.handler.BankHandler;
 import org.nexus.handler.NodeHandler;
-import org.nexus.handler.SellItemHandler;
 import org.nexus.handler.SimpleCacheManager;
 import org.nexus.handler.TaskHandler;
 import org.nexus.handler.gear.Gear;
 import org.nexus.handler.gear.GearHandler;
 import org.nexus.handler.grandexchange.BuyItemHandler;
+import org.nexus.handler.grandexchange.SellItemHandler;
 import org.nexus.loot.LootHandler;
 import org.nexus.node.Node;
+import org.nexus.node.agility.WalkToTreeGnome;
 import org.nexus.node.bank.Deposit;
 import org.nexus.node.bank.OpenBank;
 import org.nexus.node.bank.Withdraw;
@@ -36,6 +37,8 @@ import org.nexus.provider.NexProvider;
 import org.nexus.task.Task;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
+import org.nexus.task.agility.AgilityCourse;
+import org.nexus.task.agility.AgilityTask;
 import org.nexus.task.mule.DepositToMule;
 import org.nexus.utils.Timing;
 import org.nexus.utils.grandexchange.Exchange;
@@ -87,6 +90,7 @@ public class NexusScript extends Script {
 		nodeHandler.exchangeContext(getBot());
 		nodeHandler.init();
 		//currentTask = new DepositToMule();
+		currentTask = new AgilityTask(AgilityCourse.GNOME, new WalkToTreeGnome());
 		this.experienceTracker = getExperienceTracker();
 	}
 

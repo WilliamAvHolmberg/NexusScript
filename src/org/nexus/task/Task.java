@@ -26,12 +26,9 @@ public abstract class Task {
 	private int gainedXP = 0;
 	public boolean tradeIsCompleted = false;
 	private int wantedLevel = 0;
-<<<<<<< HEAD
 	protected Gear gear;
 	protected Inventory inventory;
-=======
 	protected Skill skill;
->>>>>>> parent of 70f292b... Revert "Agility"
 
 	public static Gear EMPTY_GEAR = new Gear();
 
