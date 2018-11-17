@@ -19,12 +19,13 @@ public class WithdrawFromPlayer extends Mule {
 	
 	@Override
 	public boolean isCompleted(MethodProvider methodProvider) {
-		return methodProvider.inventory.getAmount(itemID) >= itemAmount + startAmount;
+		return getTimeLeft() < 0 || (methodProvider.inventory.getAmount(itemID) >= itemAmount + startAmount);
 	}
 
 	@Override
 	public void onPaint(Graphics2D g) {
-		// TODO Auto-generated method stub
+		g.drawString("Started: " + getTimeStartedMilli(), 250, 250);
+		g.drawString("Time til new request " + getTimeLeft() , 250, 270);
 		
 	}
 }

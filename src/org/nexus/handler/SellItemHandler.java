@@ -15,7 +15,9 @@ import org.nexus.objects.GEItem;
 import org.nexus.objects.GESellItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.task.TaskType;
+import org.nexus.utils.Timing;
 import org.nexus.utils.WebBank;
+import org.osbot.rs07.api.Bank.BankMode;
 import org.osbot.rs07.script.MethodProvider;
 
 public class SellItemHandler extends Handler {
@@ -39,25 +41,22 @@ public class SellItemHandler extends Handler {
 			geItem = items.peek();
 			log("we are gonna sell " + geItem.getItemName());
 			//withdrawItem = BankHandler.getWithdrawItem();
-			if(!geItem.hasBeenWithdrawnFromBank()){
-				withdrawRequiredItem(geItem);
+			if (!playerAtGrandExchange()) {
+				return walkToAreaNode.setArea(WebBank.GRAND_EXCHANGE.getArea());
+			}else if(!geItem.hasBeenWithdrawnFromBank()){
+				log("item has not been withdrawn");
+				return withdrawRequiredItem(geItem);
 			}else if(!geItem.hasBeenSold()) {
-				if(inventory.contains(geItem.getItemID())) {
+				if(!inventory.contains(geItem.getItemName())) {
 					geItem.setHasBeenSold(true);
 					log("item has been sold");
-					return getNode();
+					return null;
 				}else {
 					log("lets sell item");
 					return sellItemNode.setItem(geItem);
 				}
-			}else if(grandExchange.isOpen()) {
-				if(grandExchange.collect()) {
-					log("sale has been completed. lets remove item");
-					items.remove(geItem);
-				}else {
-					return getNode();
-				}
 			}
+			
 
 			//ta ut item
 			//s�lj item
@@ -85,13 +84,19 @@ public class SellItemHandler extends Handler {
 	}
 
 	private Node withdrawRequiredItem(GESellItem geItem) {
-		if (bank.isOpen()) {
-			if (!bank.contains(geItem.getItemID())) {
-				geItem.setHasBeenWithdrawn(true);
-				return getNode();
-			} else {
-				return withdraw.setItem(new WithdrawItem(geItem.getItemID(), geItem.getAmount()));
+		try {
+			if (bank.open()) {
+				if (!bank.contains(geItem.getItemID())) {
+					geItem.setHasBeenWithdrawn(true);
+					return getNode();
+				} else {
+					log("lets return withdraw!");
+					return withdraw.setItem(new WithdrawItem(geItem.getItemID(), geItem.getAmount(), BankMode.WITHDRAW_NOTE));
+				}
 			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return withdrawRequiredItem(geItem);
 	}

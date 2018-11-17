@@ -1,10 +1,13 @@
 package org.nexus.task;
 
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 
 import org.nexus.NexusScript;
 import org.nexus.handler.gear.Gear;
+import org.nexus.handler.gear.GearItem;
+import org.nexus.handler.gear.Inventory;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.api.util.ExperienceTracker;
@@ -23,6 +26,8 @@ public abstract class Task {
 	private int gainedXP = 0;
 	public boolean tradeIsCompleted = false;
 	private int wantedLevel = 0;
+	protected Gear gear;
+	protected Inventory inventory;
 
 	public static Gear EMPTY_GEAR = new Gear();
 
@@ -146,6 +151,31 @@ public abstract class Task {
 
 	public int getWantedLevel() {
 		return wantedLevel;
+	}
+	
+	public Gear getGear() {
+		return gear;
+	}
+	public Inventory getInventory() {
+		return inventory;
+	}
+	
+	public ArrayList<Integer> getRequiredItems(){
+		ArrayList<Integer> reqItems = new ArrayList<Integer>();
+		if(gear != null) {
+		for(GearItem item : gear.getGear().values()) {
+			if(item != null && item.getItem() != null) {
+			reqItems.add(item.getItem().getId());
+			}
+		}
+		}
+		if(inventory != null){
+		for(int invItem : inventory.getItemIds()) {
+			reqItems.add(invItem);
+		}
+		}
+		
+		return reqItems;
 	}
 
 }

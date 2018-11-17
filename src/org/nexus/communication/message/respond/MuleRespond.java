@@ -41,15 +41,21 @@ public class MuleRespond extends TaskRespond {
 		case "mule_withdraw":
 			methodProvider.log("lets deposit to player");
 			newTask = new DepositToPlayer(world, itemID, itemAmount, startAmount, tradeName);
+			currentTime = System.currentTimeMillis();
+
+			newTask.setTimeStartedMilli(currentTime);
+			newTask.setBreakAfter(10);
 			break;
 		case "mule_deposit":
 			methodProvider.log("lets withdraw from player");
 			newTask = new WithdrawFromPlayer(world, itemID, itemAmount, startAmount, tradeName);
+			currentTime = System.currentTimeMillis();
+			methodProvider.log("TIME STARTED MILLI: " + currentTime);
+			newTask.setTimeStartedMilli(currentTime);
+			newTask.setBreakAfter(10);
 			break;
 		}
-		currentTime = System.currentTimeMillis();
-		newTask.setTimeStartedMilli(currentTime);
-		newTask.setBreakAfter(10);
+
 		TaskHandler.addTask(newTask);
 	}
 }

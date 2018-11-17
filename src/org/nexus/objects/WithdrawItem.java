@@ -1,10 +1,12 @@
 package org.nexus.objects;
 
 import org.nexus.handler.gear.Inventory;
+import org.osbot.rs07.api.Bank.BankMode;
 
 public class WithdrawItem extends RequiredItem{
 	
 	private Inventory inventory;
+	private BankMode withdrawMode = BankMode.WITHDRAW_ITEM;
 	
 	public WithdrawItem(int itemID, int itemAmount, String itemName) {
 		setItemID(itemID);
@@ -26,12 +28,29 @@ public class WithdrawItem extends RequiredItem{
 		}
 	}
 	
+	public WithdrawItem(int itemID, int amount, BankMode bankMode) {
+		setItemID(itemID);
+		setAmount(amount);
+		setBankMode(bankMode);
+	}
+
+	private void setBankMode(BankMode bankMode) {
+		this.withdrawMode = bankMode;
+		
+	}
+
 	public WithdrawItem setInventory(Inventory inventory) {
 		this.inventory = inventory;
 		return this;
 	}
 	
+
+	
 	public Inventory getInventory() {
 		return inventory;
+	}
+
+	public BankMode getWithdrawMode() {
+		return withdrawMode;
 	}
 }

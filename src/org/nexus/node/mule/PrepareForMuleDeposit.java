@@ -20,10 +20,7 @@ public class PrepareForMuleDeposit extends Node {
 
 	@Override
 	public void execute(MethodProvider methodProvider) {
-		if(!currentTask.soldItems()) {
-			methodProvider.log("lets sell items");
-		}
-		else if (!currentTask.getBanked()) {
+		if (!currentTask.getBanked()) {
 			withdrawMoney(methodProvider);
 		} else {
 			NexHelper.messageQueue.push(new MuleRequest(methodProvider, NexHelper.messageQueue,
