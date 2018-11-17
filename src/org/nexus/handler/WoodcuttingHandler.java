@@ -1,10 +1,8 @@
-package org.nexus.handler.skills;
+package org.nexus.handler;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.nexus.handler.BankHandler;
-import org.nexus.handler.Handler;
 import org.nexus.handler.gear.GearHandler;
 import org.nexus.handler.gear.GearItem;
 import org.nexus.node.Node;

@@ -106,13 +106,13 @@ public class CombatRespond extends TaskRespond {
 	private void setBreakConditions(Task newTask, String parsedBreakCondition, String breakAfter,
 			String parsedlevelGoal) {
 		if(parsedBreakCondition.toLowerCase().contains("time_or_level")) {
-			newTask.setBreakAfter(5 + (int)Double.parseDouble(breakAfter));
+			newTask.setBreakAfter((int)Double.parseDouble(breakAfter));
 			methodProvider.log(breakAfter);
 			methodProvider.log("we set condition");
 			newTask.setWantedLevel((int)Double.parseDouble(parsedlevelGoal));
 			methodProvider.log("we set wanted Level");
 		}else if(parsedBreakCondition.toLowerCase().contains("time")) {
-			newTask.setBreakAfter(5 + (int)Double.parseDouble(breakAfter));
+			newTask.setBreakAfter((int)Double.parseDouble(breakAfter));
 		}else if(parsedBreakCondition.toLowerCase().contains("level")) {
 			methodProvider.log(breakAfter);
 			methodProvider.log("we set condition");

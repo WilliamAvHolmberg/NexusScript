@@ -1,31 +1,32 @@
-package org.nexus.handler.grandexchange;
+package org.nexus.handler;
 
 import java.util.Arrays;
 import java.util.Stack;
 
 import org.nexus.NexusScript;
-import org.nexus.handler.BankHandler;
-import org.nexus.handler.Handler;
 import org.nexus.node.Node;
 import org.nexus.node.bank.Withdraw;
 import org.nexus.node.ge.BuyItem;
 import org.nexus.node.ge.HandleCoins;
+import org.nexus.node.ge.SellItem;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.DepositItem.DepositType;
 import org.nexus.objects.GEItem;
+import org.nexus.objects.GESellItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.task.TaskType;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.script.MethodProvider;
 
-public class BuyItemHandler extends Handler {
-	public static Stack<GEItem> items = new Stack<GEItem>();
-	private GEItem geItem;
+public class SellItemHandler extends Handler {
+	public static Stack<GESellItem> items = new Stack<GESellItem>();
+	private GESellItem geItem;
 	private WithdrawItem withdrawItem;
 	public static HandleCoins handleCoins = new HandleCoins();
 	public static BuyItem buyItemNode = new BuyItem();
+	public static SellItem sellItemNode = new SellItem();
 
-	public BuyItemHandler() {
+	public SellItemHandler() {
 	}
 
 	public Node getNode() {
@@ -36,11 +37,35 @@ public class BuyItemHandler extends Handler {
 		} else {
 			log("items not null");
 			geItem = items.peek();
-			log(geItem.getTotalPrice());
-			withdrawItem = BankHandler.getWithdrawItem();
-			if (purchaseIsCompleted(geItem, withdrawItem)) {
+			log("we are gonna sell " + geItem.getItemName());
+			//withdrawItem = BankHandler.getWithdrawItem();
+			if(!geItem.hasBeenWithdrawnFromBank()){
+				withdrawRequiredItem(geItem);
+			}else if(!geItem.hasBeenSold()) {
+				if(inventory.contains(geItem.getItemID())) {
+					geItem.setHasBeenSold(true);
+					log("item has been sold");
+					return getNode();
+				}else {
+					log("lets sell item");
+					return sellItemNode.setItem(geItem);
+				}
+			}else if(grandExchange.isOpen()) {
+				if(grandExchange.collect()) {
+					log("sale has been completed. lets remove item");
+					items.remove(geItem);
+				}else {
+					return getNode();
+				}
+			}
+
+			//ta ut item
+			//s�lj item
+			//make sure coins > before == purchaseIsCompleted
+
+			/*if (purchaseIsCompleted(geItem, withdrawItem)) {
 				log("done!");
-				BuyItemHandler.removeItem(geItem);
+				SellItemHandler.removeItem(geItem);
 			} else if (purchaseAmountIsWrong(geItem, withdrawItem)
 					&& NexusScript.currentTask.getTaskType() != TaskType.COMBAT) {
 				log("wrong amount");
@@ -53,22 +78,25 @@ public class BuyItemHandler extends Handler {
 				return withdraw.setItem(new WithdrawItem(995, geItem.getTotalPrice()));
 			} else {
 				return buyItemNode.setItem(geItem);
-			}
+			}*/
 		}
-		log("no node found in ge");
+		log("no node found in sell item");
 		return null;
 	}
 
-	private boolean purchaseAmountIsWrong(GEItem geItem, WithdrawItem withdrawItem) {
-		return bank.isOpen() && (withdrawItem.getAmount() - bank.getAmount(geItem.getItemID())) != geItem.getAmount();
+	private Node withdrawRequiredItem(GESellItem geItem) {
+		if (bank.isOpen()) {
+			if (!bank.contains(geItem.getItemID())) {
+				geItem.setHasBeenWithdrawn(true);
+				return getNode();
+			} else {
+				return withdraw.setItem(new WithdrawItem(geItem.getItemID(), geItem.getAmount()));
+			}
+		}
+		return withdrawRequiredItem(geItem);
 	}
 
-	private boolean purchaseIsCompleted(GEItem geItem, WithdrawItem withdrawItem) {
-		return bank.isOpen() && bank.getAmount(geItem.getItemID()) >= withdrawItem.getAmount() ||
-				inventory.getAmount(geItem.getItemName()) >= withdrawItem.getAmount();
-	}
-
-	public static void addItem(GEItem item) {
+	public static void addItem(GESellItem item) {
 		items.add(item);
 	}
 
@@ -76,7 +104,7 @@ public class BuyItemHandler extends Handler {
 		items.remove(item);
 	}
 
-	public static GEItem getItem() {
+	public static GESellItem getItem() {
 		if (items.isEmpty()) {
 			return null;
 		}

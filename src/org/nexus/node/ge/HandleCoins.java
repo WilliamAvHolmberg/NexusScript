@@ -3,7 +3,7 @@ package org.nexus.node.ge;
 import org.nexus.NexusScript;
 import org.nexus.communication.NexHelper;
 import org.nexus.communication.message.request.MuleRequest;
-import org.nexus.handler.grandexchange.BuyItemHandler;
+import org.nexus.handler.BuyItemHandler;
 import org.nexus.node.Node;
 import org.nexus.task.TaskType;
 import org.nexus.utils.Timing;

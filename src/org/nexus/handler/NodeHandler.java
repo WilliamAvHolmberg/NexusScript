@@ -5,12 +5,7 @@ import java.util.List;
 
 import org.nexus.NexusScript;
 import org.nexus.handler.gear.GearHandler;
-import org.nexus.handler.grandexchange.BuyItemHandler;
-import org.nexus.handler.grandexchange.SellItemHandler;
 import org.nexus.handler.mule.MuleHandler;
-import org.nexus.handler.skills.AgilityHandler;
-import org.nexus.handler.skills.CombatHandler;
-import org.nexus.handler.skills.WoodcuttingHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
@@ -35,7 +30,6 @@ public class NodeHandler extends Handler {
 	private GearHandler gearHandler;
 	private MuleHandler withdrawFromMuleHandler;
 	private CombatHandler combatHandler;
-	private AgilityHandler agilityHandler;
 
 	public NodeHandler() {
 		this.woodcuttingHandler = new WoodcuttingHandler();
@@ -45,7 +39,6 @@ public class NodeHandler extends Handler {
 		this.gearHandler = new GearHandler();
 		this.withdrawFromMuleHandler = new MuleHandler();
 		this.geSellItemHandler = new SellItemHandler();
-		this.agilityHandler = new AgilityHandler();
 	}
 
 	/**
@@ -70,8 +63,6 @@ public class NodeHandler extends Handler {
 		} else {
 
 			switch (getCurrentTask().getTaskType()) {
-			case AGILITY:
-				return agilityHandler.getNode();
 			case WOODCUTTING:
 				return woodcuttingHandler.getNode();
 			case COMBAT:
@@ -96,6 +87,5 @@ public class NodeHandler extends Handler {
 		this.gearHandler.exchangeContext(getBot());
 		this.withdrawFromMuleHandler.exchangeContext(getBot());
 		this.geSellItemHandler.exchangeContext(getBot());
-		this.agilityHandler.exchangeContext(getBot());
 	}
 }
