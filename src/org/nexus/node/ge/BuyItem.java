@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.nexus.handler.BuyItemHandler;
+import org.nexus.handler.grandexchange.BuyItemHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.GEItem;
 import org.nexus.utils.Timing;

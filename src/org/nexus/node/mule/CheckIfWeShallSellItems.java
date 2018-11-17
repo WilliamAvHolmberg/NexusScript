@@ -2,7 +2,7 @@ package org.nexus.node.mule;
 
 import java.util.ArrayList;
 
-import org.nexus.handler.SellItemHandler;
+import org.nexus.handler.grandexchange.SellItemHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.GESellItem;
 import org.nexus.utils.Timing;

@@ -23,6 +23,7 @@ public abstract class Task {
 	private int gainedXP = 0;
 	public boolean tradeIsCompleted = false;
 	private int wantedLevel = 0;
+	protected Skill skill;
 
 	public static Gear EMPTY_GEAR = new Gear();
 
@@ -109,7 +110,7 @@ public abstract class Task {
 	}
 
 	public Skill getSkill() {
-		return null;
+		return skill;
 	}
 
 	/**
