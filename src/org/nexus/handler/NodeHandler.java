@@ -49,7 +49,7 @@ public class NodeHandler extends Handler {
 	@Override
 	public Node getNode() {
 		node = null;
-		if (getCurrentTask().getTaskType() == TaskType.WITHDRAW_ITEM_FROM_MULE) {
+		if (getCurrentTask().getTaskType() == TaskType.WITHDRAW_ITEM_FROM_MULE || trade.isCurrentlyTrading() ) {
 			log("task is from mule");
 			return withdrawFromMuleHandler.getNode();
 		} else if (geSellItemHandler.getNode() != null) {

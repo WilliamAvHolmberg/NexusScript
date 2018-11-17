@@ -31,20 +31,24 @@ public class Withdraw extends Node {
 	public void execute(MethodProvider methodProvider) {
 		try {
 			if (methodProvider.bank.open()) {
-				invAmountPreWithdraw = (int) methodProvider.inventory.getAmount(item.getItemID());
-				amountRequired = item.getAmount() - invAmountPreWithdraw;
-				bankAmount = (int) methodProvider.bank.getAmount(item.getItemID());
-				methodProvider.log("Amount of items required:" + amountRequired);
-				methodProvider.log("Amount of items in Bank:" + bankAmount);
-				methodProvider.log("Amount of items in inventory pre withdraw:" + invAmountPreWithdraw);
+				if(methodProvider.bank.getWithdrawMode() == item.getWithdrawMode()) {
+					invAmountPreWithdraw = (int) methodProvider.inventory.getAmount(item.getItemID());
+					amountRequired = item.getAmount() - invAmountPreWithdraw;
+					bankAmount = (int) methodProvider.bank.getAmount(item.getItemID());
+					methodProvider.log("Amount of items required:" + amountRequired);
+					methodProvider.log("Amount of items in Bank:" + bankAmount);
+					methodProvider.log("Amount of items in inventory pre withdraw:" + invAmountPreWithdraw);
 
-				if (bankAmount < amountRequired) {
-					amountRequiredFromGE = amountRequired - bankAmount;
-					handleBankDoesNotContainItem(methodProvider, item, amountRequiredFromGE);
-				} else {
-					methodProvider.bank.withdraw(item.getItemID(), amountRequired);
-					Timing.waitCondition(() -> methodProvider.inventory.getAmount(item.getItemID())
-							- invAmountPreWithdraw == amountRequired, 3000);
+					if (bankAmount < amountRequired) {
+						amountRequiredFromGE = amountRequired - bankAmount;
+						handleBankDoesNotContainItem(methodProvider, item, amountRequiredFromGE);
+					} else {
+						methodProvider.bank.withdraw(item.getItemID(), amountRequired);
+						Timing.waitCondition(() -> methodProvider.inventory.getAmount(item.getItemID())
+								- invAmountPreWithdraw == amountRequired, 3000);
+					}
+				}else {
+					methodProvider.bank.enableMode(item.getWithdrawMode());
 				}
 			}
 		} catch (InterruptedException e) {

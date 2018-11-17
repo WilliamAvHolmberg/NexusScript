@@ -51,7 +51,10 @@ public class BankHandler extends Handler {
 			return walkToAreaNode.setArea(getBankArea());
 		} else if (!bankIsOpen()) {
 			return openBankNode;
-		} else if(System.currentTimeMillis() > checkIfSellItemNode.last_check + 3600 * 60 * 1000) {
+		} else if(CheckIfWeShallSellItems.getTimeTilNextCheckInMinutes() < 0) {
+			log("lets check items for some stupid reason.");
+			log(System.currentTimeMillis());
+			log(CheckIfWeShallSellItems.getNextCheckInMilli());
 			return checkIfSellItemNode;
 		}	else {
 			return withdrawNode.setItem(withdrawItem);

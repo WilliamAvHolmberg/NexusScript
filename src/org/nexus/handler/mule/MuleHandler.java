@@ -62,11 +62,7 @@ public class MuleHandler extends Handler {
 				}
 				break;
 			case PREPARE_FOR_MULE_DEPOSIT:
-				if (!currentTask.soldItems()) {
-					return sellEveryItemNode;
-				} else {
 					return prepareForMuleDepositNode.setTask(currentTask);
-				}
 			}
 		}
 		return null;

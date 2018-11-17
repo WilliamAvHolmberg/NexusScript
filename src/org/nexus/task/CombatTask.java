@@ -14,9 +14,7 @@ import org.osbot.rs07.api.ui.Skill;
 public class CombatTask extends Task {
 
 	private String monsterName;
-	private Gear gear;
 	private RSItem food;
-	private Inventory inventory;
 	private Skill skill;
 	private int lootThreshold;
 	
@@ -46,9 +44,7 @@ public class CombatTask extends Task {
 		return lootThreshold;
 	}
 	
-	public Gear getGear() {
-		return gear;
-	}
+	
 	
 	public RSItem getFood() {
 		return food;
@@ -61,9 +57,7 @@ public class CombatTask extends Task {
 		return skill;
 	}
 
-	public Inventory getInventory() {
-		return inventory;
-	}
+
 
 
 
@@ -81,6 +75,9 @@ public class CombatTask extends Task {
 				175);
 		g.drawString("Money per hour: " + NexusScript.perHour(LootHandler.valueOfLoot), 350,
 				200);
+		
+		g.drawString("Started: " + getTimeStartedMilli(), 250, 250);
+		g.drawString("Time til new request " + getTimeLeft() , 250, 270);
 	}
 
 

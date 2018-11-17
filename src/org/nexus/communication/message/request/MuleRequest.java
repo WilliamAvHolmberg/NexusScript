@@ -44,20 +44,28 @@ public class MuleRequest extends NexRequest {
 		String world = parsedRespond[2];
 		String muleType = parsedRespond[3].toLowerCase();
 		int startAmount;
+		long currentTime = System.currentTimeMillis();
 		switch (muleType) {
 		case "mule_deposit":
 			startAmount = (int) methodProvider.inventory.getAmount(itemID);
 			newTask = new DepositToPlayer(Integer.parseInt(world), itemID, amount, (int) startAmount,
 					muleName.toLowerCase());
+			
+			newTask.setTimeStartedMilli(currentTime);
+			newTask.setBreakAfter(5);
 			NexusScript.currentTask = newTask;
 			break;
 		case "mule_withdraw":
 			startAmount = (int) methodProvider.inventory.getAmount(itemID);
 			newTask = new WithdrawFromPlayer(Integer.parseInt(world), itemID, amount, (int) startAmount,
 					muleName.toLowerCase());
+			newTask.setTimeStartedMilli(currentTime);
+			newTask.setBreakAfter(5);
 			NexusScript.currentTask = newTask;
 			break;
 		}
+		
+		
 
 
 	}

@@ -39,7 +39,6 @@ public class Exchange {
 				String itemName = itemJSON.get("name").asString();
 				if (item == itemID) {
 					price = itemJSON.get("buy_average").asInt();
-					methodProvider.log(itemName);
 					if (price == 0) {
 						price = getRealPrice(itemName);
 					}

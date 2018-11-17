@@ -12,6 +12,7 @@ import org.nexus.event.LoginListener;
 import org.nexus.handler.BankHandler;
 import org.nexus.handler.BuyItemHandler;
 import org.nexus.handler.NodeHandler;
+import org.nexus.handler.SellItemHandler;
 import org.nexus.handler.SimpleCacheManager;
 import org.nexus.handler.TaskHandler;
 import org.nexus.handler.gear.Gear;
@@ -23,9 +24,12 @@ import org.nexus.node.bank.OpenBank;
 import org.nexus.node.bank.Withdraw;
 import org.nexus.node.ge.BuyItem;
 import org.nexus.node.ge.HandleCoins;
+import org.nexus.node.ge.SellItem;
 import org.nexus.node.general.WalkToArea;
+import org.nexus.node.mule.CheckIfWeShallSellItems;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
+import org.nexus.objects.GESellItem;
 import org.nexus.objects.RSItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.provider.NexProvider;
@@ -60,6 +64,7 @@ public class NexusScript extends Script {
 	String password;
 	NexProvider provider;
 	public static ExperienceTracker experienceTracker;
+	public static int mule_threshold = 10000;
 
 	@Override
 	public void onStart() {
@@ -68,7 +73,7 @@ public class NexusScript extends Script {
 		username = bot.getUsername();
 		password = getPassword();
 		log("lets sleep for 5 seconds for everything to initialize proper");
-		//sleep(15000);
+		sleep(15000);
 
 		logEvent = new LoginEvent(this, username, password, this);
 		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
@@ -81,7 +86,7 @@ public class NexusScript extends Script {
 		nodeHandler = new NodeHandler();
 		nodeHandler.exchangeContext(getBot());
 		nodeHandler.init();
-		currentTask = new DepositToMule();
+		//currentTask = new DepositToMule();
 		this.experienceTracker = getExperienceTracker();
 	}
 
@@ -176,7 +181,21 @@ public class NexusScript extends Script {
 
 		if (currentTask != null) {
 			currentTask.onPaint(g);
+			int y = 200;
+			for(int i : currentTask.getRequiredItems()) {
+				g.drawString("Required:" + i, 150, y);
+				y+=25;
+			}
 		}
+		int y = 300;
+		if(!SellItemHandler.items.isEmpty()) {
+			for(GESellItem item : SellItemHandler.items) {
+				g.drawString("Item: " + item.getItemName(), 250,y);
+				y+=25;
+			}
+		}
+		
+		g.drawString("next check in: " + CheckIfWeShallSellItems.getTimeTilNextCheckInMinutes(), 100,400);
 	}
 
 	private String getIP() {

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.nexus.handler.BuyItemHandler;
+import org.nexus.handler.SellItemHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.GESellItem;
@@ -45,6 +46,9 @@ public class SellItem extends Node {
 		hash.put(Box.BOX_5, new Integer[] { 465, 11 });
 		hash.put(Box.BOX_6, new Integer[] { 465, 12 });
 		itemID = item.getItemID();
+		if(methodProvider.inventory.contains(itemID + 1)) {
+			itemID = itemID + 1;
+		}
 		itemAmount = item.getAmount();
 		itemName = item.getItemName();
 		itemPrice = item.getItemPrice();
@@ -62,9 +66,10 @@ public class SellItem extends Node {
 
 	private void createNewOffer(int itemID, int itemAmount, String itemName, int itemPrice) {
 		methodProvider.log("lets create new buy offer: " + itemPrice);
-		methodProvider.grandExchange.sellItem(itemID, (int) (itemPrice * 0.8), itemAmount);
-		Timing.waitCondition(() -> !relevantBoxes.isEmpty(), 3000);
-		
+		methodProvider.grandExchange.sellItem(itemID, itemPrice/2, itemAmount);
+		Timing.waitCondition(() -> !relevantBoxes.isEmpty(), 5000);
+		claimItem();
+		SellItemHandler.items.remove(item);
 	}
 
 	private void handleBoxes(List<Box> relevantBoxes, int itemID) {
