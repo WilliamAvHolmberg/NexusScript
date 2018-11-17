@@ -1,9 +1,11 @@
-package org.nexus.handler;
+package org.nexus.handler.grandexchange;
 
 import java.util.Arrays;
 import java.util.Stack;
 
 import org.nexus.NexusScript;
+import org.nexus.handler.BankHandler;
+import org.nexus.handler.Handler;
 import org.nexus.node.Node;
 import org.nexus.node.bank.Withdraw;
 import org.nexus.node.ge.BuyItem;
