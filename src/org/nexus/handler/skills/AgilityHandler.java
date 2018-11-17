@@ -53,8 +53,9 @@ public class AgilityHandler extends Handler {
 			}else {
 				return walkToAreaNode.setArea(course.getArea());
 			}
+		}else {
+			return gnomeCourseNode.setCourse(course);
 		}
-		return null;
 	}
 
 

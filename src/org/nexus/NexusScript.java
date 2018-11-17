@@ -90,7 +90,10 @@ public class NexusScript extends Script {
 		nodeHandler.exchangeContext(getBot());
 		nodeHandler.init();
 		//currentTask = new DepositToMule();
-		currentTask = new AgilityTask(AgilityCourse.GNOME, new WalkToTreeGnome());
+		/*currentTask = new AgilityTask(AgilityCourse.GNOME, new WalkToTreeGnome());
+		currentTask.setTimeStartedMilli(System.currentTimeMillis());
+		currentTask.setBreakAfter(10);
+		currentTask.setWantedLevel(94);*/
 		this.experienceTracker = getExperienceTracker();
 	}
 
