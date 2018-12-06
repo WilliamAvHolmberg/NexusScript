@@ -10,12 +10,13 @@ import org.nexus.node.Node;
 import org.nexus.node.bank.Deposit;
 import org.nexus.node.bank.OpenBank;
 import org.nexus.node.bank.Withdraw;
-import org.nexus.node.general.WalkToArea;
 import org.nexus.node.mule.CheckIfWeShallSellItems;
+import org.nexus.node.walking.WalkToArea;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.DepositItem.DepositType;
 import org.nexus.objects.WithdrawItem;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
+import org.osbot.rs07.Bot;
 import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.script.MethodProvider;
 
@@ -29,7 +30,10 @@ public class BankHandler extends Handler {
 
 	private int[] stockArr;
 
-
+	@Override
+	public MethodProvider exchangeContext(Bot arg0) {
+		return super.exchangeContext(arg0);
+	}
 	@Override
 	public Node getNode() {
 		if (!itemsToDeposit.isEmpty()) {

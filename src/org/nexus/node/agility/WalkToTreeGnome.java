@@ -2,10 +2,11 @@ package org.nexus.node.agility;
 
 import org.nexus.node.Node;
 import org.nexus.task.agility.GnomeData;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.script.MethodProvider;
+
+import org.nexus.utils.Timing;
 
 
 

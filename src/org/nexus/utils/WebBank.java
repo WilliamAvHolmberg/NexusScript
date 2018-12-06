@@ -25,7 +25,6 @@ public enum WebBank {
     DUEL_ARENA(Banks.DUEL_ARENA),
     PEST_CONTROL(Banks.PEST_CONTROL),
     CANIFIS(Banks.CANIFIS),
-    TZHAAR(Banks.TZHAAR),
 	GRAND_EXCHANGE(Banks.GRAND_EXCHANGE);
 
     private final Area area;

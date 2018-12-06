@@ -8,7 +8,7 @@ public abstract class Node {
 	
 	public abstract String toString(); //Node name - eg: CutTree
 	
-	public void sleep(int milli) {
+	public void Sleep(int milli) {
 		try {
 			MethodProvider.sleep(15000);
 		}catch(Exception e) {

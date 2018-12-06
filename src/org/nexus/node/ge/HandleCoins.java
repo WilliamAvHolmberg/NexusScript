@@ -6,9 +6,9 @@ import org.nexus.communication.message.request.MuleRequest;
 import org.nexus.handler.grandexchange.BuyItemHandler;
 import org.nexus.node.Node;
 import org.nexus.task.TaskType;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.script.MethodProvider;
 
+import org.nexus.utils.Timing;
 public class HandleCoins extends Node {
 
 	@Override

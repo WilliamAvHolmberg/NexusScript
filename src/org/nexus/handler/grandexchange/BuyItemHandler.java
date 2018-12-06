@@ -29,12 +29,9 @@ public class BuyItemHandler extends Handler {
 	}
 
 	public Node getNode() {
-		log("in ge handler");
 		if (items.isEmpty()) {
-			log("items is null??");
 			return null;
 		} else {
-			log("items not null");
 			geItem = items.peek();
 			log(geItem.getTotalPrice());
 			withdrawItem = BankHandler.getWithdrawItem();
@@ -55,7 +52,6 @@ public class BuyItemHandler extends Handler {
 				return buyItemNode.setItem(geItem);
 			}
 		}
-		log("no node found in ge");
 		return null;
 	}
 

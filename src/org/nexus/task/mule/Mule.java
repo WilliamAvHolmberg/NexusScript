@@ -3,12 +3,12 @@ package org.nexus.task.mule;
 import java.util.function.BooleanSupplier;
 
 import org.nexus.objects.RSItem;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.TaskType;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.script.MethodProvider;
 
-public abstract class Mule extends Task {
+public abstract class Mule extends ActionTask {
 	
 	protected int world;
 	protected int itemID;
@@ -72,11 +72,13 @@ public abstract class Mule extends Task {
 		return tradeName;
 	}
 	
-	public boolean isCompleted(MethodProvider methodProvider) {
+	public boolean isFinished(MethodProvider methodProvider) {
 		if(tradeIsCompleted) {
+			methodProvider.log("Trade completed from mess");
 			return true;
 		}	
-		if (breakAfterTime > 0 && timeStartedMilli > 0 && getTimeLeft() <= 0) {
+		if (getTimeLeft() <= 0) {
+			methodProvider.log("no time left");
 			return true;
 		}
 		return false;

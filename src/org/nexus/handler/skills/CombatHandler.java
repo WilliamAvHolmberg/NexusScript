@@ -21,7 +21,7 @@ import org.nexus.objects.RSItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.objects.DepositItem.DepositType;
 import org.nexus.task.CombatTask;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.WoodcuttingTask;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.Bank;
@@ -47,23 +47,29 @@ public class CombatHandler extends Handler {
 
 	public Node getNode() {
 		// TODO, WALK TO BANK: FIX INVENTORY:: ETC :: NOW LETS PLAY A FIFA GAME
-
+		log("lets get combat node");
 		CombatTask combatTask = (CombatTask) getCurrentTask();
 		GearItem itemToEquip = getGearItemToEquip(combatTask.getGear());
 		if (itemToEquip != null && inventory.isFull()) {
+			log("inventory");
 			BankHandler.addItem(new DepositItem(DepositType.DEPOSIT_ALL_EXCEPT, itemToEquip.getItem().getId()));
 		}else if(itemToEquip != null) {
+			log("equip");
 			GearHandler.addItem(itemToEquip);
 			return null;
 		}else if (!playerInActionArea()) {
 			return handleOutOfActionArea(combatTask);
 		}else if (inventory.isFull() && !inventory.contains(combatTask.getFood().getId())) { //TODO, maybe add method, getInventory at bank
+			log("eat");
 			BankHandler.addItem(new DepositItem(DepositItem.DepositType.DEPOSIT_ALL_EXCEPT, combatTask.getInventory().getItemIds()));
 		}else if (Eat.shallEat(this)) {
 			return handleShallEat(combatTask);
 		} else if (LootNode.valueableDropAvailable(this, combatTask.getLootThreshold(), combatTask.getActionArea()) != null){
+			log("loot");
 			return handleLoot(combatTask);
+			
 		} else if (!myPlayer().isAnimating()) {
+			log("lets send combat task");
 			return fightNode.setCombatTask(combatTask);
 		}
 		return null;

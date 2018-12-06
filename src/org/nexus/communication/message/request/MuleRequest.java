@@ -21,6 +21,7 @@ public class MuleRequest extends NexRequest {
 
 	@Override
 	public void execute(PrintWriter out, BufferedReader in) throws IOException {
+		methodProvider.log("new mule requestelele");
 		String[] nextRequest = respond.split(":");
 		String muleType = nextRequest[0].toLowerCase();
 		String itemID = nextRequest[1];
@@ -36,10 +37,11 @@ public class MuleRequest extends NexRequest {
 			methodProvider.log("no mule available");
 			messageQueue.add(new DisconnectMessage(methodProvider, messageQueue, null));
 		}
+		methodProvider.log("helelulu??");
 	}
 
 	private void handleSuccessfullMuleRespond(String[] parsedRespond, int itemID, int amount) {
-
+		methodProvider.log("successfull!");
 		String muleName = parsedRespond[1];
 		String world = parsedRespond[2];
 		String muleType = parsedRespond[3].toLowerCase();

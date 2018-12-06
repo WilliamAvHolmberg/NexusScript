@@ -11,7 +11,7 @@ import org.nexus.objects.RSItem;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.Skill;
 
-public class CombatTask extends Task {
+public class CombatTask extends ActionTask {
 
 	private String monsterName;
 	private RSItem food;

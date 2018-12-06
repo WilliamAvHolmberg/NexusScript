@@ -3,9 +3,10 @@ package org.nexus.node.mule;
 import org.nexus.NexusScript;
 import org.nexus.node.Node;
 import org.nexus.task.mule.Mule;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.api.model.Player;
 import org.osbot.rs07.script.MethodProvider;
+
+import org.nexus.utils.Timing;
 
 public abstract class Trade extends Node{
 

@@ -8,10 +8,12 @@ import org.nexus.handler.Handler;
 import org.nexus.handler.gear.GearHandler;
 import org.nexus.handler.gear.GearItem;
 import org.nexus.node.Node;
+import org.nexus.node.agility.AgilityMethods;
+import org.nexus.node.combat.LootNode;
 import org.nexus.node.woodcutting.Cut;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.WithdrawItem;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.WoodcuttingTask;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.Bank;
@@ -48,8 +50,11 @@ public class WoodcuttingHandler extends Handler {
 			BankHandler.addItem(new DepositItem(DepositItem.DepositType.DEPOSIT_ALL_EXCEPT, itemsToKeep));
 		} else if(!playerInActionArea()){
 			return walkToAreaNode.setArea(wcTask.getActionArea());
+		}else if(inventory.getEmptySlotCount() >= 2 && LootNode.valueableDropAvailable(this, "Bird nest", wcTask.getActionArea()) != null) {
+			log("lets loot birds nest@");
+			return CombatHandler.lootNode.setItemAndArea(LootNode.valueableDropAvailable(this, "Bird nest", wcTask.getActionArea()), wcTask.getActionArea());
 		}else if(!myPlayer().isAnimating()) {
-			return cutTreeNode.setTreeName(wcTask.getTreeName());
+			return cutTreeNode.setTask(wcTask);
 		} //else return idle, prepare for next tree
 		return null;
 	}

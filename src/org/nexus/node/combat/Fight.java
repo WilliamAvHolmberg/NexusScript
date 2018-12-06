@@ -6,11 +6,12 @@ import java.util.List;
 import org.nexus.node.Node;
 import org.nexus.node.combat.methods.AttackStyle;
 import org.nexus.task.CombatTask;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.api.filter.Filter;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.script.MethodProvider;
+
+import org.nexus.utils.Timing;
 
 public class Fight extends Node {
 
@@ -29,13 +30,14 @@ public class Fight extends Node {
 	@Override
 	public void execute(MethodProvider methodProvider) {
 		this.methodProvider = methodProvider;
+		methodProvider.log("in fight");
 		if (combatTask != null && !attackStyle.rightStyle(combatTask.getSkill(), methodProvider)) {
 			attackStyle.changeStyle(combatTask.getSkill(), methodProvider);
 		} else if (playerIsAttacking() && interactingNpcIsAvailable()) {
 			methodProvider.log("We are already attacking");
 			combatSleep();
 			// sleep untill drop has been dropped
-			Timing.sleep(2500);
+			Timing.sleep(1200);
 		} else if (underAttack() && getInteractingNPC() != null && !playerIsAttacking()
 				&& getInteractingNPC().hasAction("Attack")) {
 			// attack entity that is attacking us
@@ -43,6 +45,7 @@ public class Fight extends Node {
 			attackExistingTarget();
 		} else {
 			// find new target and attack
+			methodProvider.log("lets atk");
 			attackNewTarget();
 		}
 	}
@@ -75,7 +78,7 @@ public class Fight extends Node {
 			methodProvider.getWalking().webWalk(target.getPosition());
 		}else if (target != null && target.interact("Attack")) {
 			methodProvider.log("lets sleep");
-			// combatSleep();
+			// combatSleep.sleep();
 			// Sleep until player is interacting npc or npc is interacting
 			// someone else than our player
 			// perhaps change so target.isUnderAttack?
@@ -158,7 +161,7 @@ public class Fight extends Node {
 	Filter<NPC> appropriateTargetFilter = new Filter<NPC>() {
 		@Override
 		public boolean match(NPC n) {
-			return targetName.equals(n.getName()) && n.isAttackable() && n.getHealthPercent() >= 50;
+			return combatTask.getActionArea().contains(n) && targetName.equals(n.getName()) && n.isAttackable() && n.getHealthPercent() >= 50;
 		}
 	};
 

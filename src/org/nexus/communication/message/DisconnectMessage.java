@@ -17,6 +17,7 @@ public class DisconnectMessage extends NexMessage{
 	@Override
 	public void execute(PrintWriter out, BufferedReader in) throws IOException {
 		NexusScript.SHOULD_RUN = false;	
+		System.exit(1);
 	}
 
 }

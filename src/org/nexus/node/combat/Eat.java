@@ -2,9 +2,10 @@ package org.nexus.node.combat;
 
 import org.nexus.node.Node;
 import org.nexus.objects.RSItem;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
+
+import org.nexus.utils.Timing;
 
 public class Eat extends Node {
 

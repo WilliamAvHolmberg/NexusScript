@@ -11,7 +11,7 @@ import org.nexus.communication.message.NexMessage;
 import org.nexus.handler.TaskHandler;
 import org.nexus.node.mule.DepositItemToPlayer;
 import org.nexus.objects.RSItem;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
 import org.nexus.task.mule.DepositToPlayer;
@@ -44,7 +44,7 @@ public class MuleRespond extends TaskRespond {
 			currentTime = System.currentTimeMillis();
 
 			newTask.setTimeStartedMilli(currentTime);
-			newTask.setBreakAfter(10);
+			newTask.setBreakAfter(5);
 			break;
 		case "mule_deposit":
 			methodProvider.log("lets withdraw from player");
@@ -52,7 +52,7 @@ public class MuleRespond extends TaskRespond {
 			currentTime = System.currentTimeMillis();
 			methodProvider.log("TIME STARTED MILLI: " + currentTime);
 			newTask.setTimeStartedMilli(currentTime);
-			newTask.setBreakAfter(10);
+			newTask.setBreakAfter(5);
 			break;
 		}
 

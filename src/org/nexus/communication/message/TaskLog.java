@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Stack;
 
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.osbot.rs07.script.MethodProvider;
 
 public class TaskLog extends NexMessage {
 
-	Task currentTask;
-	public TaskLog(MethodProvider methodProvider, Stack<NexMessage> messageQueue, Task currentTask, String respond) {
+	ActionTask currentTask;
+	public TaskLog(MethodProvider methodProvider, Stack<NexMessage> messageQueue, ActionTask currentTask, String respond) {
 		super(methodProvider, messageQueue, respond);
 		this.currentTask = currentTask;
 	}

@@ -21,7 +21,7 @@ public class Inventory {
 	}
 	
 	public void addItem(RSItem item, int amount) {	
-		items.add(new InventoryItem(amount, item));
+		items.add(new InventoryItem(amount, item, 1));
 	}
 	
 	public ArrayList<InventoryItem> getItems(){
@@ -51,5 +51,15 @@ public class Inventory {
 			}
 		}
 		return true;
+	}
+
+	public InventoryItem find(int itemID) {
+		for(InventoryItem item : items) {
+			if(item.getItem().getId() == itemID) {
+				return item;
+			}
+		}
+		
+		return null;
 	}
 }

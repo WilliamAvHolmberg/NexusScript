@@ -24,6 +24,7 @@ public class LootHandler {
 	
 	public static void reset() {
 		loot = new ArrayList<Loot>();
+		valueOfLoot = 0;
 	}
 
 }

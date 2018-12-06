@@ -5,9 +5,9 @@ import org.nexus.node.Node;
 import org.nexus.node.bank.Deposit;
 import org.nexus.node.bank.Withdraw;
 import org.nexus.node.equip.EquipItem;
-import org.nexus.node.general.WalkToArea;
+import org.nexus.node.walking.WalkToArea;
 import org.nexus.provider.NexProvider;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.script.MethodProvider;
@@ -21,7 +21,7 @@ public abstract class Handler extends NexProvider {
 	
 	public abstract Node getNode();
 	
-	public Task getCurrentTask() {
+	public ActionTask getCurrentTask() {
 		return NexusScript.currentTask;
 	}
 	

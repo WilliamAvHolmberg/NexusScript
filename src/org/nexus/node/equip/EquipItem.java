@@ -4,8 +4,9 @@ import org.nexus.handler.BankHandler;
 import org.nexus.handler.gear.GearItem;
 import org.nexus.node.Node;
 import org.nexus.objects.WithdrawItem;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.script.MethodProvider;
+
+import org.nexus.utils.Timing;
 
 public class EquipItem extends Node{
 

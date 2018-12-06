@@ -4,10 +4,10 @@ import org.nexus.node.Node;
 import org.nexus.node.methods.AreaMethods;
 import org.nexus.task.agility.AgilityCourse;
 import org.nexus.task.agility.AgilityObstacle;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.utility.ConditionalSleep;
 
+import org.nexus.utils.Timing;
 public class AgilityCourseNode extends Node {
 
 	private AgilityCourse agilityCourse;
@@ -23,8 +23,7 @@ public class AgilityCourseNode extends Node {
 		for (AgilityObstacle obstacle : agilityCourse.getObstacles()) {
 			if (AreaMethods.playerInArea(obstacle.getArea(), methodProvider)) {
 				AgilityMethods.climbObs(obstacle.getAction(), obstacle.getID(), methodProvider);
-				Timing.sleep(2000);
-				new ConditionalSleep(5000, 600) {
+				new ConditionalSleep(2000, 600) {
 					@Override
 					public boolean condition() throws InterruptedException {
 						return AgilityMethods.playerInAgilityArea(agilityCourse, methodProvider);

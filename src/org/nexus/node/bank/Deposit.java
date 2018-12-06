@@ -9,9 +9,10 @@ import org.nexus.node.Node;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.WithdrawItem;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.script.MethodProvider;
+
+import org.nexus.utils.Timing;
 
 public class Deposit extends Node {
 	private DepositItem depositItem;

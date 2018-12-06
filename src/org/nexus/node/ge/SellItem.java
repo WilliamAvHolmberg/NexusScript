@@ -9,13 +9,13 @@ import org.nexus.handler.grandexchange.SellItemHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.GESellItem;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.api.GrandExchange;
 import org.osbot.rs07.api.GrandExchange.Box;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.input.mouse.WidgetDestination;
 import org.osbot.rs07.script.MethodProvider;
+import org.nexus.utils.Timing;
 
 public class SellItem extends Node {
 
@@ -66,7 +66,7 @@ public class SellItem extends Node {
 
 	private void createNewOffer(int itemID, int itemAmount, String itemName, int itemPrice) {
 		methodProvider.log("lets create new buy offer: " + itemPrice);
-		methodProvider.grandExchange.sellItem(itemID, itemPrice/2, itemAmount);
+		methodProvider.grandExchange.sellItem(itemID, 1, itemAmount);
 		Timing.waitCondition(() -> !relevantBoxes.isEmpty(), 5000);
 		claimItem();
 		SellItemHandler.items.remove(item);

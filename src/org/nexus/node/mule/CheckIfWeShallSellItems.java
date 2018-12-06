@@ -6,18 +6,18 @@ import org.nexus.NexusScript;
 import org.nexus.handler.grandexchange.SellItemHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.GESellItem;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.mule.DepositToMule;
-import org.nexus.utils.Timing;
 import org.nexus.utils.grandexchange.Exchange;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.script.MethodProvider;
+import org.nexus.utils.Timing;
 
 public class CheckIfWeShallSellItems extends Node{
 
 	//used to check when last time we checked items was
 	public static long last_check = 0;
-	private Task currentTask;
+	private ActionTask currentTask;
 	@Override
 	public boolean shallExecute(MethodProvider methodProvider) {
 		// TODO Auto-generated method stub
@@ -30,7 +30,7 @@ public class CheckIfWeShallSellItems extends Node{
 		try {
 			if(methodProvider.bank.open()) {
 				ArrayList<GESellItem> itemsToSell = new ArrayList<GESellItem>();
-				int totalValue = 0;
+				int totalValue = (int) methodProvider.bank.getAmount(995);
 				for(Item item : methodProvider.bank.getItems()) {
 					if(item != null && item.getId() != 995) {
 					int value = item.getAmount() * Exchange.getPrice(item.getId(), methodProvider);
@@ -70,7 +70,7 @@ public class CheckIfWeShallSellItems extends Node{
 		return (getNextCheckInMilli() - System.currentTimeMillis())/60000;
 	}
 	
-	public Node setTask(Task task) {
+	public Node setTask(ActionTask task) {
 		this.currentTask = task;
 		return this;
 	}

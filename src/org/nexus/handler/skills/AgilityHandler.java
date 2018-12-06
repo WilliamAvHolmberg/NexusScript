@@ -24,6 +24,7 @@ import org.nexus.objects.WithdrawItem;
 import org.nexus.objects.DepositItem.DepositType;
 import org.nexus.task.CombatTask;
 import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.WoodcuttingTask;
 import org.nexus.task.agility.AgilityCourse;
 import org.nexus.task.agility.AgilityTask;
@@ -38,7 +39,8 @@ import org.osbot.rs07.script.MethodProvider;
 
 public class AgilityHandler extends Handler {
 
-	public static AgilityCourseNode gnomeCourseNode = new AgilityCourseNode();
+	public static AgilityCourseNode courseNode = new AgilityCourseNode();
+	
 
 	public AgilityHandler() {
 		
@@ -48,13 +50,16 @@ public class AgilityHandler extends Handler {
 		AgilityTask agilityTask = (AgilityTask) getCurrentTask();
 		AgilityCourse course = agilityTask.getCourse(this);
 		if(!AgilityMethods.playerInAgilityArea(course, this)) {
-			if(agilityTask.getWalkNode() != null) {
-				return agilityTask.getWalkNode();
+			if(course.getWalkNode() != null) {
+				return course.getWalkNode();
 			}else {
-				return walkToAreaNode.setArea(course.getArea());
+				return walkToAreaNode.setArea(course.getObstacles().get(0).getArea()); //walk to obstacle nr1 (nr0)
 			}
+		}else if(AgilityMethods.getMarkOfGrace(this, course) != null) {
+			log("lets loot mark of grace@@@@@@");
+			return CombatHandler.lootNode.setItemAndArea(AgilityMethods.getMarkOfGrace(this, course), AgilityMethods.getCurrentArea(this, course, myPlayer()));
 		}else {
-			return gnomeCourseNode.setCourse(course);
+			return courseNode.setCourse(course);
 		}
 	}
 

@@ -15,7 +15,7 @@ import org.nexus.node.Node;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.WithdrawItem;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.TaskType;
 import org.nexus.task.mule.Mule;
 import org.nexus.task.mule.WithdrawFromPlayer;

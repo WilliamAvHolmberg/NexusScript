@@ -15,6 +15,7 @@ import org.nexus.handler.SimpleCacheManager;
 import org.nexus.handler.TaskHandler;
 import org.nexus.handler.gear.Gear;
 import org.nexus.handler.gear.GearHandler;
+import org.nexus.handler.gear.Inventory;
 import org.nexus.handler.grandexchange.BuyItemHandler;
 import org.nexus.handler.grandexchange.SellItemHandler;
 import org.nexus.loot.LootHandler;
@@ -26,31 +27,37 @@ import org.nexus.node.bank.Withdraw;
 import org.nexus.node.ge.BuyItem;
 import org.nexus.node.ge.HandleCoins;
 import org.nexus.node.ge.SellItem;
-import org.nexus.node.general.WalkToArea;
 import org.nexus.node.mule.CheckIfWeShallSellItems;
+import org.nexus.node.walking.WalkToArea;
 import org.nexus.objects.DepositItem;
 import org.nexus.objects.GEItem;
 import org.nexus.objects.GESellItem;
 import org.nexus.objects.RSItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.provider.NexProvider;
+import org.nexus.task.CombatTask;
 import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
 import org.nexus.task.agility.AgilityCourse;
 import org.nexus.task.agility.AgilityTask;
 import org.nexus.task.mule.DepositToMule;
-import org.nexus.utils.Timing;
+import org.nexus.task.quests.tutorial.TutorialIsland;
 import org.nexus.utils.grandexchange.Exchange;
 import org.nexus.utils.grandexchange.RSExchange;
+import org.osbot.rs07.api.Client;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.EquipmentSlot;
 import org.osbot.rs07.api.ui.Message;
+import org.osbot.rs07.api.ui.RS2Widget;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.api.ui.Message.MessageType;
 import org.osbot.rs07.api.util.ExperienceTracker;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
+import org.nexus.utils.Timing;
 
 @ScriptManifest(author = "Nex", info = "", logo = "", name = "NEX", version = 0.1)
 public class NexusScript extends Script {
@@ -60,23 +67,26 @@ public class NexusScript extends Script {
 	Thread nexHelperThread;
 	private Node currentNode;
 	public static NodeHandler nodeHandler;
-	public static Task currentTask;
+	public static ActionTask currentTask;
 	private Node node;
 	private LoginEvent logEvent;
-	String username;
-	String password;
+	public static String username;
+	public static String password;
 	NexProvider provider;
 	public static ExperienceTracker experienceTracker;
-	public static int mule_threshold = 10000;
+	public static int mule_threshold = 30000000;
 
+	Task quest = new TutorialIsland();
 	@Override
 	public void onStart() {
+		quest.exchangeContext(bot);
 		provider = new NexProvider();
 		provider.exchangeContext(getBot());
 		username = bot.getUsername();
 		password = getPassword();
 		log("lets sleep for 5 seconds for everything to initialize proper");
 		sleep(15000);
+		
 
 		logEvent = new LoginEvent(this, username, password, this);
 		getBot().getLoginResponseCodeListeners().add(new LoginListener(this));
@@ -89,24 +99,18 @@ public class NexusScript extends Script {
 		nodeHandler = new NodeHandler();
 		nodeHandler.exchangeContext(getBot());
 		nodeHandler.init();
-		//currentTask = new DepositToMule();
-		/*currentTask = new AgilityTask(AgilityCourse.GNOME, new WalkToTreeGnome());
-		currentTask.setTimeStartedMilli(System.currentTimeMillis());
-		currentTask.setBreakAfter(10);
-		currentTask.setWantedLevel(94);*/
+
 		this.experienceTracker = getExperienceTracker();
+		experienceTracker.startAll();
+
+
 	}
 
 	private String getPassword() {
-		if (getParameters() != null) {
-			String[] params = getParameters().split("_");
-			log(params);
-			log(getParameters());
-			password = params[0];
-			return password;
-		}
 		return "ugot00wned2";
 	}
+	
+
 
 	@Override
 	public int onLoop() throws InterruptedException {
@@ -115,20 +119,32 @@ public class NexusScript extends Script {
 		// Shall exit script when SHOULD_RUN is false
 		checkIfWeShouldStop();
 
-		if (!client.isLoggedIn() && (currentTask == null || currentTask.getTaskType() != TaskType.BREAK)) {
+		if (!isloggedIn() && (currentTask == null || currentTask.getTaskType() != TaskType.BREAK)) {
 			login();
+		} else if(!quest.isFinished()) {
+			log("tut");
+			try {
+				quest.onLoop();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		} else if (currentTask == null) { // !currentTask.isCompleted(this)) {
 			helper.getNewTask();
 			log("Lets sleep until we found task");
 			Timing.waitCondition(() -> !TaskHandler.available_tasks.isEmpty() || currentTask != null, 15000);
-			experienceTracker.start(Skill.WOODCUTTING);
-		} else if (currentTask.isCompleted(this)) {
+		} else if (currentTask.isFinished(this)) {
 			handleCompletedTask();
 		} else {
+			log("handle state");
 			handleStates();
 		}
 
 		return 600; // amount of milliseconds to wait before each loop. Set to 600
+	}
+
+	private boolean isloggedIn() {
+		return getClient().getLoginState().equals(Client.LoginState.LOGGED_IN) ;
 	}
 
 	private void handleCompletedTask() {
@@ -150,7 +166,7 @@ public class NexusScript extends Script {
 	private void handleStates() {
 		if (currentTask.getTaskType() == TaskType.BREAK && client.isLoggedIn()) {
 			logoutTab.logOut();
-		} else if (currentTask.getTaskType() != TaskType.BREAK) {
+		}else if (currentTask.getTaskType() != TaskType.BREAK) {
 			node = nodeHandler.getNode();
 			if (node != null) {
 				currentNode = node;
@@ -185,17 +201,16 @@ public class NexusScript extends Script {
 		if (!GearHandler.itemsToEquip.isEmpty()) {
 			g.drawString("lets equip:" + GearHandler.itemsToEquip.peek().getItem().getName(), 50, 125);
 		}
-
-		if (currentTask != null) {
+		
+		if(currentTask != null) {
 			currentTask.onPaint(g);
-			int y = 200;
-			for(int i : currentTask.getRequiredItems()) {
-				g.drawString("Required:" + i, 150, y);
-				y+=25;
-			}
 		}
+
+		
 		int y = 300;
 		if(!SellItemHandler.items.isEmpty()) {
+			g.drawString("Items in sell list: " + SellItemHandler.items.size(), 250, y);
+			y+= 25;
 			for(GESellItem item : SellItemHandler.items) {
 				g.drawString("Item: " + item.getItemName(), 250,y);
 				y+=25;
@@ -226,8 +241,16 @@ public class NexusScript extends Script {
 	public void onMessage(Message message) throws InterruptedException {
 		String txt = message.getMessage().toLowerCase();
 		
-		if (txt.contains("accepted trade.") && currentTask != null && currentTask.getTaskType() == TaskType.DEPOSIT_ITEM_TO_PLAYER || currentTask.getTaskType() == TaskType.WITHDRAW_ITEM_FROM_MULE) {
+		if (message.getType() == MessageType.GAME && txt.equals("accepted trade.") && currentTask != null && (currentTask.getTaskType() == TaskType.DEPOSIT_ITEM_TO_PLAYER || 
+				currentTask.getTaskType() == TaskType.WITHDRAW_ITEM_FROM_MULE)) {
 			NexusScript.currentTask.tradeIsCompleted = true;
+			log("trade is completed from onmessage");
+			log("mess:"  + message.getMessage());
+			log("message type " + message.getType());
+		}
+		
+		if (message.getMessage().contains("logs.") && currentTask.getTaskType() == TaskType.WOODCUTTING) {
+			LootHandler.addLoot(((WoodcuttingTask)currentTask).getLog());
 		}
 		
 	}
@@ -245,5 +268,13 @@ public class NexusScript extends Script {
 	public static void setTracker(Skill skill) {
 		experienceTracker.start(skill);
 	}
+	
+	private RS2Widget getSwitchWorldButton() {
+		if(getWidgets() != null) {
+		return getWidgets().getWidgetContainingText("Click to switch");
+		}
+		return null;
+	}
+	
 
 }

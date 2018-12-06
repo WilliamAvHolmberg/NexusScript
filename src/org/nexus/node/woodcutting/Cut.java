@@ -4,17 +4,19 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.nexus.node.Node;
+import org.nexus.task.WoodcuttingTask;
 import org.nexus.utils.Timing;
 import org.osbot.rs07.api.filter.Filter;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.script.MethodProvider;
 
+
 public class Cut extends Node {
 
 	MethodProvider methodProvider;
 	RS2Object object;
-	private String treeName;
+	private WoodcuttingTask wcTask;
 
 	@Override
 	public boolean shallExecute(MethodProvider methodProvider) {
@@ -42,9 +44,10 @@ public class Cut extends Node {
 	Filter<RS2Object> appropriateObjectFilter = new Filter<RS2Object>() {
 		@Override
 		public boolean match(RS2Object o) {
-			return o.getName().equals(treeName) && o.hasAction("Chop down");
+			return wcTask.getActionArea().contains(o) && o.getName().equals(wcTask.getTreeName()) && o.hasAction("Chop down");
 		}
 	};
+
 
 	public RS2Object getClosestAvailableTree() {
 		return methodProvider.objects.closest(appropriateObjectFilter);
@@ -56,8 +59,8 @@ public class Cut extends Node {
 		return "Cut";
 	}
 
-	public Node setTreeName(String name) {
-		this.treeName = name;
+	public Node setTask(WoodcuttingTask task) {
+		this.wcTask = task;
 		return this;
 	}
 

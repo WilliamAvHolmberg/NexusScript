@@ -11,7 +11,7 @@ import org.nexus.objects.RSItem;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.Skill;
 
-public class BreakTask extends Task {
+public class BreakTask extends ActionTask {
 
 	@Override
 	public void onPaint(Graphics2D g) {
@@ -20,5 +20,7 @@ public class BreakTask extends Task {
 			g.drawString("Break is done in: " + getTimeLeft() + " minutes", 350, 125);
 		}
 	}
+
+
 
 }

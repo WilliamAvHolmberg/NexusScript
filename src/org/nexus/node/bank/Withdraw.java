@@ -10,8 +10,8 @@ import org.nexus.objects.GEItem;
 import org.nexus.objects.WithdrawItem;
 import org.nexus.task.CombatTask;
 import org.nexus.task.TaskType;
-import org.nexus.utils.Timing;
 import org.osbot.rs07.script.MethodProvider;
+import org.nexus.utils.Timing;
 
 public class Withdraw extends Node {
 
@@ -66,10 +66,10 @@ public class Withdraw extends Node {
 			methodProvider.log("sleep until we got new task");
 			Timing.waitCondition(() -> NexusScript.currentTask.getTaskType() == TaskType.WITHDRAW_ITEM_FROM_MULE, 15000);
 		} else {
-			if (NexusScript.currentTask.getTaskType() == TaskType.COMBAT
-					&& ((CombatTask) NexusScript.currentTask).getFood().getId() == item.getItemID()) {
-				methodProvider.log("Item that we are buying are food. lets buy many");
-				amountRequiredFromGE = 100;
+			if (NexusScript.currentTask.getInventory() != null &&
+					NexusScript.currentTask.getInventory().find(item.getItemID()) != null) {
+				methodProvider.log("Item that we are buying are inventory item. lets change");
+				amountRequiredFromGE = NexusScript.currentTask.getInventory().find(item.getItemID()).getBuyAmount();
 			}
 			BuyItemHandler.addItem(new GEItem(item.getItemID(), amountRequiredFromGE, item.getItemName()));
 			methodProvider.log("Bank does not contain the required amount of our item. Buy:" + amountRequiredFromGE);

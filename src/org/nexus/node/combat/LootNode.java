@@ -1,16 +1,20 @@
 package org.nexus.node.combat;
 
 
+import org.nexus.NexusScript;
+import org.nexus.handler.skills.WoodcuttingHandler;
 import org.nexus.loot.Loot;
 import org.nexus.loot.LootHandler;
 import org.nexus.node.Node;
 import org.nexus.objects.RSItem;
-import org.nexus.utils.Timing;
+import org.nexus.task.agility.AgilityTask;
 import org.nexus.utils.grandexchange.Exchange;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.GroundItem;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
+
+import org.nexus.utils.Timing;
 
 public class LootNode extends Node {
 
@@ -40,7 +44,13 @@ public class LootNode extends Node {
 
 			// if successful loot
 			if (amountAfterLoot > amountBeforeLoot) {
+				
 				methodProvider.log("Successfull loot");
+				if(item.getName().equals("Mark of grace")) {
+					((AgilityTask) NexusScript.currentTask).updateMarkOfGraces();
+					LootHandler.valueOfLoot += 13780;
+					methodProvider.log("adding mark of grace loot");
+				}
 
 				// calculate the quantity
 				int lootAmount = amountAfterLoot - amountBeforeLoot;
@@ -79,6 +89,16 @@ public class LootNode extends Node {
 		this.item = item;
 		this.area = area;
 		return this;
+	}
+
+	public static GroundItem valueableDropAvailable(WoodcuttingHandler methodProvider, String name, Area area) {
+		for (GroundItem item : methodProvider.groundItems.getAll()) {
+			int price = Exchange.getPrice(item.getId(), methodProvider);
+			if (area.contains(item) && item.getName().equals(name)) {
+				return item;
+			}
+		}
+		return null;
 	}
 
 }

@@ -16,9 +16,10 @@ import org.nexus.objects.WithdrawItem;
 import org.nexus.task.TaskType;
 import org.nexus.task.mule.Mule;
 import org.nexus.task.mule.WithdrawFromPlayer;
-import org.nexus.utils.Timing;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.model.Player;
+
+import org.nexus.utils.Timing;
 
 public class MuleHandler extends Handler {
 

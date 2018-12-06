@@ -7,6 +7,7 @@ import java.util.Stack;
 
 import org.nexus.communication.message.DisconnectMessage;
 import org.nexus.communication.message.NexMessage;
+import org.nexus.communication.message.respond.AgilityRespond;
 import org.nexus.communication.message.respond.BreakRespond;
 import org.nexus.communication.message.respond.CombatRespond;
 import org.nexus.communication.message.respond.MuleRespond;
@@ -57,6 +58,9 @@ public class RequestTask extends NexRequest{
 				break;
 			case "MULE_DEPOSIT":
 				messageQueue.push(new MuleRespond(methodProvider, messageQueue, respond));
+				break;
+			case "AGILITY":
+				messageQueue.push(new AgilityRespond(methodProvider, messageQueue, respond));
 				break;
 				
 			}

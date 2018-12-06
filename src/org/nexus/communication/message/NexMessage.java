@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Stack;
 
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.osbot.rs07.script.MethodProvider;
 
 public abstract class NexMessage {
@@ -14,7 +14,7 @@ public abstract class NexMessage {
 	protected Stack<NexMessage> messageQueue;
 	protected String respond;
 	
-	protected Task newTask;
+	protected ActionTask newTask;
 	
 	public NexMessage(MethodProvider methodProvider, Stack<NexMessage> messageQueue, String respond) {
 		this.methodProvider = methodProvider;

@@ -10,7 +10,7 @@ import org.nexus.NexusScript;
 import org.nexus.communication.message.NexMessage;
 import org.nexus.handler.TaskHandler;
 import org.nexus.objects.RSItem;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
 import org.nexus.utils.WebBank;
@@ -42,6 +42,8 @@ public class WoodcuttingRespond extends TaskRespond {
 		String treeName = parsed[8];
 		String parsedBreakCondition = parsed[9];
 		String breakAfter = parsed[10];
+		String parsedLevelGoal = parsed[11];
+		methodProvider.log("Wanted level: " + parsedLevelGoal);
 		Area bankArea = null;
 		if (!parsedBankArea.equals("none")) {
 			bankArea = WebBank.parseCoordinates(parsedBankArea);
@@ -54,9 +56,7 @@ public class WoodcuttingRespond extends TaskRespond {
 		methodProvider.log("Break in: "
 				+ (((currentTime + (Integer.parseInt(breakAfter) * 1000 * 60) - currentTime)) / 60000 + "minutes"));
 		newTask = new WoodcuttingTask(actionArea, bankArea, axe, treeName);
-		newTask.setBreakType(parsedBreakCondition);
-		newTask.setBreakAfter((int)Double.parseDouble(breakAfter));
-		// TODO newTask.setWantedLevel((int)Double.parseDouble(parsedlevelGoal));
+		setBreakConditions(newTask, parsedBreakCondition, breakAfter, parsedLevelGoal);
 		newTask.setTimeStartedMilli(currentTime);
 		newTask.setTaskID(currentTaskID);
 		TaskHandler.addTask(newTask);

@@ -5,7 +5,7 @@ import org.osbot.rs07.api.ui.Message;
 import org.osbot.rs07.listener.MessageListener;
 import org.osbot.rs07.script.MethodProvider;
 
-public class WithdrawItemFromPlayer extends Trade implements MessageListener {
+public class WithdrawItemFromPlayer extends Trade {
 
 	@Override
 	public boolean shallExecute(MethodProvider methodProvider){
@@ -34,16 +34,6 @@ public class WithdrawItemFromPlayer extends Trade implements MessageListener {
 	public String toString() {
 		// TODO Auto-generated method stub
 		return "Trade with Slave";
-	}
-	
-	@Override
-	public void onMessage(Message message) throws InterruptedException {
-		String txt = message.getMessage().toLowerCase();
-		
-		if (txt.contains("accepted")) {
-			NexusScript.currentTask = null;
-		}
-		
 	}
 
 }

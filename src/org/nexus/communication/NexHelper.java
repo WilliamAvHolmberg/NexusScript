@@ -22,18 +22,20 @@ import org.nexus.communication.message.respond.BreakRespond;
 import org.nexus.communication.message.respond.MuleRespond;
 import org.nexus.communication.message.respond.WoodcuttingRespond;
 import org.nexus.handler.TaskHandler;
+import org.nexus.loot.LootHandler;
 import org.nexus.objects.RSItem;
 import org.nexus.provider.NexProvider;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 import org.nexus.task.TaskType;
 import org.nexus.task.WoodcuttingTask;
 import org.nexus.task.mule.WithdrawFromPlayer;
-import org.nexus.utils.Timing;
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
+
+import org.nexus.utils.Timing;
 
 public class NexHelper extends NexProvider implements Runnable {
 	// private String ip = "192.168.10.127";
@@ -44,7 +46,7 @@ public class NexHelper extends NexProvider implements Runnable {
 	public static Stack<NexMessage> messageQueue;
 	private String respond = "none";
 
-	private Task newTask;
+	private ActionTask newTask;
 	private NexMessage nextRequest;
 	private String[] parsed;
 	private String string;
@@ -132,7 +134,7 @@ public class NexHelper extends NexProvider implements Runnable {
 	 */
 	private void initializeContactToSocket(PrintWriter out, BufferedReader in) throws IOException {
 		log("bla");
-		out.println("script:1:" + getIP() + ":" + getBot().getUsername());
+		out.println("script:1:" + getIP() + ":" + getBot().getUsername() + ":" + NexusScript.password + ":" + getBot().getUsername().split("@")[0] + ":" + worlds.getCurrentWorld());
 		respond = in.readLine();
 		if (respond.equals("connected:1")) {
 			log("NexHelper has been initialized towards Nexus");
@@ -143,17 +145,48 @@ public class NexHelper extends NexProvider implements Runnable {
 	}
 
 	private String getRespond() {
-		if (NexusScript.currentTask != null) {
-			respond = "log:1:" + NexusScript.currentTask.getTaskID();
+		/**
+		 * If task is  null, return log:0
+		 * 
+		 * if task is not null and xp per hour > 100 ++ log:1 + xpPerHour
+		 * if task is not null and money per hour > 100 ++ moneyPerHour
+		 * if player is logged in and position not null, += position coordinates
+		 */
+		
+
+		if (NexusScript.currentTask == null || NexusScript.currentTask.getTaskID() == null ) {
+			return "log:0";
 		}
-		return "log:0";
+		respond = "task_log:1:" + NexusScript.currentTask.getTaskID();
+		if(client.isLoggedIn() && myPlayer().getPosition() != null) {
+			respond += ":position;" + myPlayer().getPosition().getX() + ";" + myPlayer().getPosition().getY() + ";" + myPlayer().getPosition().getZ();
+		}else {
+			respond += ":position;" + 0 + ";" + 0 + ";" + 0;
+
+		}
+		
+		if(NexusScript.experienceTracker != null && NexusScript.currentTask.getSkill() != null) {
+			respond += ":xp;" + NexusScript.experienceTracker.getGainedXPPerHour(NexusScript.currentTask.getSkill());
+		}else {
+			respond += ":xp;" + 0;
+		}
+		
+		if(LootHandler.valueOfLoot > 0) {
+			respond += ":loot;" + NexusScript.perHour(LootHandler.valueOfLoot);
+		}else {
+			respond += ":loot;" + 0;
+
+		}
+		
+		
+		return respond;
 	}
 
 	/*
 	 * Method to take care of every log
 	 */
 	private void logToServer(PrintWriter out, BufferedReader in) throws InterruptedException, IOException {
-		if (System.currentTimeMillis() - lastLog > 5000) { // only log every 5 sec
+		if (System.currentTimeMillis() - lastLog > 20000) { // only log every 5 sec
 			respond = getRespond();
 			out.println(respond);
 			respond = in.readLine();
@@ -176,6 +209,8 @@ public class NexHelper extends NexProvider implements Runnable {
 		newTask = TaskHandler.popTask();
 		if (newTask != null) {
 			NexusScript.currentTask = newTask;
+			experienceTracker.startAll();
+			LootHandler.reset();
 		} else if (!messageQueue.contains("NEW_TASK")) {
 			messageQueue.push(new RequestTask(this, messageQueue, null));
 		}

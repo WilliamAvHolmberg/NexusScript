@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import org.nexus.NexusScript;
 import org.nexus.communication.message.NexMessage;
 import org.nexus.handler.TaskHandler;
 import org.nexus.handler.gear.Gear;
@@ -13,7 +14,7 @@ import org.nexus.handler.gear.Inventory;
 import org.nexus.handler.gear.InventoryItem;
 import org.nexus.objects.RSItem;
 import org.nexus.task.CombatTask;
-import org.nexus.task.Task;
+import org.nexus.task.ActionTask;
 
 import org.nexus.utils.WebBank;
 import org.osbot.rs07.api.map.Area;
@@ -75,6 +76,13 @@ public class CombatRespond extends TaskRespond {
 		String parsedLootThreshold = parsed[23];
 		String parsedSkill = parsed[24];
 		String parsedlevelGoal = parsed[25];
+		String shouldMule = parsed[26];
+		
+		if(shouldMule.toLowerCase().contains("true")) {
+			NexusScript.mule_threshold = 300000;
+		}
+		
+		methodProvider.log("Threshold: " + NexusScript.mule_threshold + " mess:" + shouldMule);
 		
 		
 		int lootThreshold = Integer.parseInt(parsedLootThreshold);
@@ -103,39 +111,9 @@ public class CombatRespond extends TaskRespond {
 		methodProvider.log("created task");
 	}
 
-	private void setBreakConditions(Task newTask, String parsedBreakCondition, String breakAfter,
-			String parsedlevelGoal) {
-		if(parsedBreakCondition.toLowerCase().contains("time_or_level")) {
-			newTask.setBreakAfter(5 + (int)Double.parseDouble(breakAfter));
-			methodProvider.log(breakAfter);
-			methodProvider.log("we set condition");
-			newTask.setWantedLevel((int)Double.parseDouble(parsedlevelGoal));
-			methodProvider.log("we set wanted Level");
-		}else if(parsedBreakCondition.toLowerCase().contains("time")) {
-			newTask.setBreakAfter(5 + (int)Double.parseDouble(breakAfter));
-		}else if(parsedBreakCondition.toLowerCase().contains("level")) {
-			methodProvider.log(breakAfter);
-			methodProvider.log("we set condition");
-			newTask.setWantedLevel((int)Double.parseDouble(parsedlevelGoal));
-			methodProvider.log("we set wanted Level");
-		}
-		
-	}
+	
 
-	private Inventory getInventory(String parsedInventory) {
-		Inventory inv = new Inventory();
-		for(String parsedInvItem : parsedInventory.split(";")) {
-			if(parsedInvItem.length() > 2) {
-				String[] moreParsed = parsedInvItem.split(",");
-				String itemName = moreParsed[0];
-				int itemId = Integer.parseInt(moreParsed[1]);
-				int itemAmount = Integer.parseInt(moreParsed[2]);
-				InventoryItem newItem = new InventoryItem(itemAmount, new RSItem(itemName, itemId));
-				inv.addItem(newItem);
-			}
-		}
-		return inv;
-	}
+	
 
 	private Gear getGear(String[] parsed, ArrayList<String> listOfParsedGear) {
 		Gear gear = new Gear();
